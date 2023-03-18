@@ -48,14 +48,9 @@ namespace AutoSnake3
                 };
             }
 
-            public bool IsNextTo(Cell other)
-            {
-                foreach (Cell c in Neighbors!)
-                    if (c == other)
-                        return true;
+            public int DistanceTo(Cell other) => abs(X - other.X) + abs(Y - other.Y);
 
-                return false;
-            }
+            int abs(int value) => value >= 0 ? value : -value;
 
             IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 
