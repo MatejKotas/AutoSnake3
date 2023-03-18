@@ -55,6 +55,22 @@ namespace AutoSnake3
                 AlgorithmHead = Head;
             }
 
+            int EnumerateDistance(Cell initial) // Returns cycle length
+            {
+                initial.DistanceFromHead = 0;
+                int distance = 1;
+
+                initial = initial.Next;
+
+                while (initial.DistanceFromHead != 0)
+                {
+                    initial.DistanceFromHead = distance++;
+                    initial = initial.Next;
+                }
+
+                return distance;
+            }
+
             void CalculatePath()
             {
                 throw new NotImplementedException();

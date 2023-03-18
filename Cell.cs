@@ -25,6 +25,8 @@ namespace AutoSnake3
             internal Direction NextDirection;
             internal Cell Next { get => Move(NextDirection)!; }
 
+            internal int DistanceFromHead;
+
             internal Cell(int x, int y, Game parent)
             {
                 X = x;
