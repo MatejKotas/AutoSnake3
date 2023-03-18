@@ -125,7 +125,10 @@ namespace AutoSnake3
 
             public (int, bool) MakeMove()
             {
-                if (MakeMove(Head.NextDirection))
+                if (!Automatic)
+                    throw new InvalidOperationException("Game not initilized automatic mode. Pass in a direction, or initilize game in automatic mode.");
+
+                if (makeMove(Head.NextDirection))
                 {
                     Stopwatch elapsed = Stopwatch.StartNew();
 
@@ -137,6 +140,14 @@ namespace AutoSnake3
             }
 
             public bool MakeMove(Direction newDirection)
+            {
+                if (Automatic)
+                    throw new InvalidOperationException("Game in automatic mode, can't pass in direciton parameter. Use parameterless version of MakeMove or initilize game in maual mode.");
+
+                return makeMove(newDirection);
+            }
+
+            bool makeMove(Direction newDirection)
             {
                 if (gameOver)
                     throw new InvalidOperationException("Game has already concluded.");
@@ -194,7 +205,7 @@ namespace AutoSnake3
                         if (Matrix[x, y].Occupied())
                         {
                             Console.BackgroundColor = ConsoleColor.Green;
-                            
+
                             switch (Matrix[x, y].SnakeDirection)
                             {
                                 case Direction.Up:
