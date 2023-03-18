@@ -83,7 +83,11 @@ namespace AutoSnake3
                 Debug.Assert(Apple != null);
 
                 if (automatic)
+                {
+                    InitilizeAlgorithm();
+
                     CalculatePath();
+                }
             }
 
             public void NewApple()
