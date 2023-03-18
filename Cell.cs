@@ -44,6 +44,15 @@ namespace AutoSnake3
                     _ => throw new InvalidOperationException()
                 };
             }
+
+            public bool IsNextTo(Cell other)
+            {
+                foreach (Cell c in Neighbors!)
+                    if (c == other)
+                        return true;
+
+                return false;
+            }
         }
     }
 }
