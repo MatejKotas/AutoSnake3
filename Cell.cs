@@ -1,10 +1,11 @@
+using System.Collections;
 using System.Runtime.Serialization;
 
 namespace AutoSnake3
 {
     static partial class Snake
     {
-        public class Cell
+        public class Cell : IEnumerable // Enumerates the cells in the order of the hamiltonian cycle we are following
         {
             internal readonly Game parent;
 
@@ -52,6 +53,42 @@ namespace AutoSnake3
                         return true;
 
                 return false;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
+
+            class Enumerator : IEnumerator
+            {
+                Cell start;
+                Cell current;
+
+                bool first = true;
+
+                public Enumerator(Cell start)
+                {
+                    this.start = start;
+                    current = start;
+                }
+
+                public object Current { get => current; }
+
+                public bool MoveNext()
+                {
+                    if (!first)
+                    {
+                        current = current.Next;
+                        return current != start;
+                    }
+
+                    first = false;
+                    return true;
+                }
+
+                public void Reset()
+                {
+                    current = start;
+                    first = false;
+                }
             }
         }
     }
