@@ -56,7 +56,7 @@ namespace AutoSnake3
 
             class Enumerator : IEnumerator
             {
-                Cell start;
+                readonly Cell start;
                 Cell current;
 
                 bool first = true;
