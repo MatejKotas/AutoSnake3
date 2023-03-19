@@ -8,6 +8,29 @@ namespace AutoSnake3
 
             void InitilizeAlgorithm()
             {
+                // Set neighbors
+
+                foreach (Cell c in Matrix)
+                {
+                    List<Cell> neighbors = new List<Cell>();
+
+                    if (c.Up != null)
+                        neighbors.Add(c.Up);
+
+                    if (c.Right != null)
+                        neighbors.Add(c.Right);
+
+                    if (c.Down != null)
+                        neighbors.Add(c.Down);
+
+                    if (c.Left != null)
+                        neighbors.Add(c.Left);
+
+                    c.Neighbors = neighbors.ToArray();
+                }
+
+                // Set initial hamiltonian cycle
+
                 if (SizeX % 2 == 1 && SizeY % 2 == 1)
                     throw new Exception("SizeX or SizeY must be an even number for algorithm to work");
 

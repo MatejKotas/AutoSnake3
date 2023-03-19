@@ -20,7 +20,7 @@ namespace AutoSnake3
             public Cell? Down { get; internal set; }
             public Cell? Left { get; internal set; }
 
-            internal Cell[]? Neighbors;
+            internal Cell[]? Neighbors; // Only set in automatic mode
 
             internal Direction NextDirection;
             internal Cell Next { get => Move(NextDirection)!; }

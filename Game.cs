@@ -41,17 +41,6 @@ namespace AutoSnake3
                     {
                         Cell current = new(x, y, this);
 
-                        int neighbors = 4;
-
-                        if (x == 0 || x == SizeX - 1)
-                            neighbors--;
-                        if (y == 0 || y == SizeY - 1)
-                            neighbors--;
-
-                        current.Neighbors = new Cell[neighbors];
-
-                        Matrix[x, y] = current;
-
                         if (x != 0)
                         {
                             current.Left = Matrix[x - 1, y];
@@ -63,6 +52,8 @@ namespace AutoSnake3
                             current.Down = Matrix[x, y - 1];
                             current.Down.Up = current;
                         }
+
+                        Matrix[x, y] = current;
                     }
                 }
 
