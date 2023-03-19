@@ -12,7 +12,7 @@ namespace AutoSnake3
 
                 foreach (Cell c in Matrix)
                 {
-                    List<Cell> neighbors = new List<Cell>();
+                    List<Cell> neighbors = new();
 
                     if (c.Up != null)
                         neighbors.Add(c.Up);
