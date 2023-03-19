@@ -121,7 +121,7 @@ namespace AutoSnake3
             public (int, bool) MakeMove()
             {
                 if (!Automatic)
-                    throw new InvalidOperationException("Game not initilized automatic mode. Pass in a direction, or initilize game in automatic mode.");
+                    throw new InvalidOperationException("Game not initilized in automatic mode. Pass in a direction, or initilize game in automatic mode.");
 
                 if (makeMove(Head.NextDirection))
                 {
