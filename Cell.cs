@@ -48,9 +48,9 @@ namespace AutoSnake3
                 };
             }
 
-            public int DistanceTo(Cell other) => abs(X - other.X) + abs(Y - other.Y);
+            public int DistanceTo(Cell other) => Abs(X - other.X) + Abs(Y - other.Y);
 
-            int abs(int value) => value >= 0 ? value : -value;
+            static int Abs(int value) => value >= 0 ? value : -value;
 
             IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
 
