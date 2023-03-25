@@ -123,7 +123,7 @@ namespace AutoSnake3
                 if (!Automatic)
                     throw new InvalidOperationException("Game not initilized in automatic mode. Pass in a direction, or initilize game in automatic mode.");
 
-                if (makeMove(Head.NextDirection))
+                if (makeMove(Head.NextDirection) && !gameOver)
                 {
                     Stopwatch elapsed = Stopwatch.StartNew();
 
@@ -177,7 +177,7 @@ namespace AutoSnake3
                 return false;
             }
 
-            public void Print()
+            public void Print(bool snake, bool cycle)
             {
                 Console.ForegroundColor = ConsoleColor.Black;
                 Console.BackgroundColor = ConsoleColor.DarkGreen;
@@ -197,11 +197,31 @@ namespace AutoSnake3
 
                     for (int x = 0; x < SizeX; x++)
                     {
-                        if (Matrix[x, y].Occupied())
+                        if (snake && Apple == Matrix[x, y])
                         {
-                            Console.BackgroundColor = ConsoleColor.Green;
+                            Console.BackgroundColor = ConsoleColor.Red;
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            Console.Write("**");
+                        }
 
-                            switch (Matrix[x, y].SnakeDirection)
+                        else if ((snake && Matrix[x, y].Occupied()) || cycle)
+                        {
+                            Direction d;
+
+                            if (snake && Matrix[x, y].Occupied())
+                            {
+                                d = Matrix[x, y].SnakeDirection;
+                                Console.BackgroundColor = ConsoleColor.Green;
+                                Console.ForegroundColor= ConsoleColor.Black;
+                            }
+                            else
+                            {
+                                d = Matrix[x, y].NextDirection;
+                                Console.BackgroundColor = ConsoleColor.Black;
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+
+                            switch (d)
                             {
                                 case Direction.Up:
                                     Console.Write("AA");
@@ -223,12 +243,6 @@ namespace AutoSnake3
                                     Console.Write("OO");
                                     break;
                             }
-                        }
-
-                        else if (Apple == Matrix[x, y])
-                        {
-                            Console.BackgroundColor = ConsoleColor.Red;
-                            Console.Write("**");
                         }
 
                         else
@@ -256,7 +270,7 @@ namespace AutoSnake3
                 Console.ForegroundColor = ConsoleColor.White;
 
                 Console.WriteLine($"\n\n" +
-                          $"Ticks: { Tick + Length }\n" +
+                          $"Ticks: { Tick + Length - StartingLength }\n" +
                           $"Length: { Length }\n" +
                           $"Apples Collected: { Length - StartingLength }");
             }

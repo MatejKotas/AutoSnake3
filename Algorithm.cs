@@ -1,11 +1,11 @@
+using System.Diagnostics;
+
 namespace AutoSnake3
 {
     public partial class Snake
     {
         public partial class Game
         {
-            Cell? AlgorithmHead;
-
             void InitilizeAlgorithm()
             {
                 // Set neighbors
@@ -29,7 +29,7 @@ namespace AutoSnake3
                     c.Neighbors = neighbors.ToArray();
                 }
 
-                // Set initial hamiltonian cycle
+                // Set starting hamiltonian cycle
 
                 if (SizeX % 2 == 1 && SizeY % 2 == 1)
                     throw new Exception("SizeX or SizeY must be an even number for algorithm to work");
@@ -41,11 +41,15 @@ namespace AutoSnake3
                         for (int x = 1; x < SizeX; x++)
                         {
                             Matrix[x, y].NextDirection = Direction.Left;
-                            Matrix[x, y + 1].NextDirection = Direction.Right;
+
+                            if (x < SizeX - 1)
+                                Matrix[x, y + 1].NextDirection = Direction.Right;
                         }
 
                         Matrix[SizeX - 1, y + 1].NextDirection = Direction.Down;
-                        Matrix[1, y].NextDirection = Direction.Down;
+
+                        if (y > 0)
+                            Matrix[1, y].NextDirection = Direction.Down;
                     }
 
                     Matrix[0, SizeY - 1].NextDirection = Direction.Right;
@@ -61,11 +65,15 @@ namespace AutoSnake3
                         for (int y = 1; y < SizeY; y++)
                         {
                             Matrix[x, y].NextDirection = Direction.Down;
-                            Matrix[x + 1, y].NextDirection = Direction.Up;
+
+                            if (y < SizeY - 1)
+                                Matrix[x + 1, y].NextDirection = Direction.Up;
                         }
 
                         Matrix[x + 1, SizeY - 1].NextDirection = Direction.Left;
-                        Matrix[x, 1].NextDirection = Direction.Left;
+
+                        if (x > 0)
+                            Matrix[x, 1].NextDirection = Direction.Left;
                     }
 
                     Matrix[SizeX - 1, 0].NextDirection = Direction.Up;
@@ -74,29 +82,79 @@ namespace AutoSnake3
                     for (int x = 0; x < SizeX - 1; x++)
                         Matrix[x, 0].NextDirection = Direction.Right;
                 }
-
-                AlgorithmHead = Head;
-            }
-
-            int EnumerateDistance(Cell initial) // Returns cycle length
-            {
-                initial.DistanceFromHead = 0;
-                int distance = 1;
-
-                initial = initial.Next;
-
-                while (initial.DistanceFromHead != 0)
-                {
-                    initial.DistanceFromHead = distance++;
-                    initial = initial.Next;
-                }
-
-                return distance;
             }
 
             void CalculatePath()
             {
-                throw new NotImplementedException();
+                OptimizePath();
+            }
+
+            void OptimizePath()
+            {
+                Head.SetDistance(Apple, 0, false);
+
+                int directDistanceToApple = Head.DistanceTo(Apple);
+
+                Cell current = Head;
+
+                while (current.CycleDistance <= Apple.CycleDistance - 3 && Apple.CycleDistance > directDistanceToApple)
+                {
+                    foreach (Cell neighbor in current.Neighbors!)
+                        if (neighbor.CycleDistance > current.CycleDistance && neighbor != current.Next && neighbor.CycleDistance <= Apple.CycleDistance && Splice(current, neighbor))
+                            Head.SetDistance(Apple, 0, false);
+
+                    current = current.Next;
+                }
+            }
+
+            // Connects b.Previous to a.Next, a to b, and joins the two cycles somewhere else
+            bool Splice(Cell a, Cell b)
+            {
+                Debug.Assert(a != b);
+
+                if (b.Previous.DistanceTo(a.Next) > 1)
+                    return false;
+
+                Direction splice2 = a.NextDirection; // In case the splice fails
+
+                Cell cycle = b.Previous;
+
+                Direction splice = a.DirectionTo(b);
+
+                a.NextDirection = splice;
+                cycle.NextDirection = ReverseDirection(splice);
+
+                cycle.SetSeperated(true);
+
+                Cell current = cycle;
+
+                do
+                {
+                    foreach (Cell neighbor in current.Neighbors!)
+                    {
+                        if (!neighbor.Seperated && (neighbor.CycleDistance > Apple.CycleDistance || neighbor.CycleDistance == 0) && neighbor.Previous.DistanceTo(current.Next) == 1 && neighbor.SnakeTick < Tick + Apple.CycleDistance - b.CycleDistance + a.CycleDistance)
+                        {
+                            Debug.Assert(neighbor.Previous.DistanceTo(current.Next) == 1);
+
+                            neighbor.Previous.NextDirection = neighbor.Previous.DirectionTo(current.Next);
+                            current.NextDirection = current.DirectionTo(neighbor);
+
+                            cycle.SetSeperated(false);
+
+                            return true;
+                        }
+                    }
+
+                    current = current.Next;
+                }
+                while (current != cycle);
+
+                cycle.SetSeperated(false);
+
+                a.NextDirection = splice2;
+                cycle.NextDirection = ReverseDirection(splice2);
+
+                return false;
             }
         }
     }

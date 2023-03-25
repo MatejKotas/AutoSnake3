@@ -14,7 +14,7 @@
 
         static void Main(string[] args)
         {
-#if true
+#if false
 
             GameMode mode = GameMode.Unset;
 
@@ -78,38 +78,42 @@
             }
         }
 
-#elif false
-
-        Game? a = null;
-
-        int appleCount = 0;
-
-        while (true)
-        {
-            if (a == null || a.gameOver)
-                a = new(30, 30, true);
-
-            a.Print(false);
-
-            Console.ReadLine();
-
-            a.MakeMove();
-        }
-    }
-
 #elif true
 
-        Game a = new(30, 30, true, 0);
+            Game? a = null;
 
-        for (int i = 0; i < 0; i++)
-            a.MakeMove();
+            int seed = 0;
 
-        while (!a.gameOver)
-        {
-            a.MakeMove();
-            a.Print(a.Tick, a.BestPath.Index);
+            while (true)
+            {
+                if (a == null || a.gameOver)
+                    a = new(30, 30, true, 1);
+
+                if (a.Head.NextDirection != ReverseDirection(a.Head.PreviousDirection))
+                    Console.ReadLine();
+
+                a.MakeMove();
+
+                if (a.Head.NextDirection != ReverseDirection(a.Head.PreviousDirection))
+                    a.Print(true, true);
+            }
         }
-    }
+
+#elif false
+
+            Game a = new(4, 4, true, 4);
+
+            for (int i = 0; i < 0; i++)
+                a.MakeMove();
+
+            a.Print(true, true);
+
+            while (!a.gameOver)
+            {
+                a.MakeMove();
+                a.Print(true, true);
+            }
+        }
 
 #elif false
 
