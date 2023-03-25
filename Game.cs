@@ -206,20 +206,22 @@ namespace AutoSnake3
 
                         else if ((snake && Matrix[x, y].Occupied()) || cycle)
                         {
-                            Direction d;
+                            Direction d = Direction.None;
 
                             if (snake && Matrix[x, y].Occupied())
                             {
                                 d = Matrix[x, y].SnakeDirection;
                                 Console.BackgroundColor = ConsoleColor.Green;
-                                Console.ForegroundColor= ConsoleColor.Black;
+                                Console.ForegroundColor = ConsoleColor.Black;
                             }
                             else
                             {
-                                d = Matrix[x, y].NextDirection;
                                 Console.BackgroundColor = ConsoleColor.Black;
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
+
+                            if (cycle)
+                                d = Matrix[x, y].NextDirection;
 
                             switch (d)
                             {
