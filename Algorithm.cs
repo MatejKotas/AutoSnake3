@@ -132,7 +132,7 @@ namespace AutoSnake3
                 {
                     foreach (Cell neighbor in current.Neighbors!)
                     {
-                        if (!neighbor.Seperated && (neighbor.CycleDistance > Apple.CycleDistance || neighbor.CycleDistance == 0) && neighbor.Previous.DistanceTo(current.Next) == 1 && neighbor.SnakeTick < Tick + Apple.CycleDistance - b.CycleDistance + a.CycleDistance)
+                        if (!neighbor.Seperated && (neighbor.CycleDistance > Apple.CycleDistance || neighbor.CycleDistance == 0) && neighbor.Previous.DistanceTo(current.Next) == 1 && !neighbor.Occupied(Tick + Apple.CycleDistance - b.CycleDistance + a.CycleDistance))
                         {
                             Debug.Assert(neighbor.Previous.DistanceTo(current.Next) == 1);
 

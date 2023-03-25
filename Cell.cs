@@ -94,7 +94,9 @@ namespace AutoSnake3
                 while (current != this);
             }
 
-            public bool Occupied() => SnakeTick >= parent.Tick;
+            public bool Occupied() => Occupied(parent.Tick);
+
+            public bool Occupied(int tick) => SnakeTick >= tick;
 
             public Cell? Move(Direction direction)
             {
