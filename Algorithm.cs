@@ -89,7 +89,7 @@ namespace AutoSnake3
                 OptimizePath();
             }
 
-            void OptimizePath()
+            bool OptimizePath()
             {
                 Head.SetDistance(Apple, 0, false);
 
@@ -97,14 +97,23 @@ namespace AutoSnake3
 
                 Cell current = Head;
 
+                bool changed = false;
+
                 while (current.CycleDistance <= Apple.CycleDistance - 3 && Apple.CycleDistance > directDistanceToApple)
                 {
                     foreach (Cell neighbor in current.Neighbors!)
+                    {
                         if (neighbor.CycleDistance > current.CycleDistance && neighbor != current.Next && neighbor.CycleDistance <= Apple.CycleDistance && Splice(current, neighbor))
+                        {
                             Head.SetDistance(Apple, 0, false);
+                            changed = true;
+                        }
+                    }
 
                     current = current.Next;
                 }
+
+                return changed;
             }
 
             // Connects b.Previous to a.Next, a to b, and joins the two cycles somewhere else
