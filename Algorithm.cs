@@ -91,7 +91,7 @@ namespace AutoSnake3
 
             bool OptimizePath()
             {
-                Head.SetDistance(Apple, 0, false);
+                Head.SetDistance(Apple);
 
                 int directDistanceToApple = Head.DistanceTo(Apple);
 
@@ -105,7 +105,7 @@ namespace AutoSnake3
                     {
                         if (neighbor.CycleDistance > current.CycleDistance && neighbor != current.Next && neighbor.CycleDistance <= Apple.CycleDistance && Splice(current, neighbor))
                         {
-                            Head.SetDistance(Apple, 0, false);
+                            Head.SetDistance(Apple);
                             changed = true;
                         }
                     }
