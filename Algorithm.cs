@@ -101,12 +101,20 @@ namespace AutoSnake3
 
                 while (current.CycleDistance <= Apple.CycleDistance - 3 && Apple.CycleDistance > directDistanceToApple)
                 {
+                    restart:
+
                     foreach (Cell neighbor in current.Neighbors!)
                     {
                         if (neighbor.CycleDistance > current.CycleDistance && neighbor != current.Next && neighbor.CycleDistance <= Apple.CycleDistance && Splice(current, neighbor))
                         {
                             Head.SetDistance(Apple);
                             changed = true;
+
+                            // It seems restarting is the best way to guarantee the whole path gets streched out fully
+
+                            current = Head;
+
+                            goto restart;
                         }
                     }
 
