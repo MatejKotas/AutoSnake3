@@ -217,7 +217,11 @@ namespace AutoSnake3
                             else
                             {
                                 Console.BackgroundColor = ConsoleColor.Black;
-                                Console.ForegroundColor = ConsoleColor.White;
+
+                                if (cycle && !Matrix[x, y].Occupied(Tick + Matrix[x, y].CycleDistance - Head.CycleDistance))
+                                    Console.ForegroundColor = ConsoleColor.Blue;
+                                else
+                                    Console.ForegroundColor = ConsoleColor.White;
                             }
 
                             if (cycle)
