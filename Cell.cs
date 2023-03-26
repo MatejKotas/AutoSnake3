@@ -59,14 +59,17 @@ namespace AutoSnake3
             }
 
             // Also sets seperated to false
-            internal int SetDistance(Cell stop, int startCount = 0) // Returns cycle length
+            internal int SetDistance(Cell? stop, int startCount = 0) // Returns cycle length
             {
                 CycleDistanceIndexCounter++;
 
                 int count = startCount;
                 Cell current = this;
 
-                stop = stop.Next;
+                if (stop == null)
+                    stop = current;
+                else
+                    stop = stop.Next;
 
                 do
                 {

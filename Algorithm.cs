@@ -91,7 +91,7 @@ namespace AutoSnake3
 
             bool OptimizePath()
             {
-                Head.SetDistance(Apple);
+                Head.SetDistance(null);
 
                 int directDistanceToApple = Head.DistanceTo(Apple);
 
@@ -107,7 +107,7 @@ namespace AutoSnake3
                     {
                         if (neighbor.CycleDistance > current.CycleDistance && neighbor != current.Next && neighbor.CycleDistance <= Apple.CycleDistance && Splice(current, neighbor))
                         {
-                            Head.SetDistance(Apple);
+                            Head.SetDistance(null);
                             changed = true;
 
                             // It seems restarting is the best way to guarantee the whole path gets streched out fully
@@ -149,7 +149,7 @@ namespace AutoSnake3
                 {
                     foreach (Cell neighbor in current.Neighbors!)
                     {
-                        if (!neighbor.Seperated && neighbor.CycleDistance > Apple.CycleDistance && neighbor.Previous.DistanceTo(current.Next) == 1 && !neighbor.Occupied(Tick + Apple.CycleDistance - b.CycleDistance + a.CycleDistance))
+                        if (!neighbor.Seperated && neighbor.CycleDistance > Apple.CycleDistance && neighbor.Previous.DistanceTo(current.Next) == 1 && Area - Length > neighbor.CycleDistance)
                         {
                             Debug.Assert(neighbor.Previous.DistanceTo(current.Next) == 1);
 

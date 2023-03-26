@@ -22,6 +22,8 @@ namespace AutoSnake3
             public readonly int SizeX;
             public readonly int SizeY;
 
+            public readonly int Area;
+
             public Cell Apple; // Null at end of game
             public Random AppleGenerator;
 
@@ -31,6 +33,8 @@ namespace AutoSnake3
             {
                 SizeX = sizeX;
                 SizeY = sizeY;
+                Area = SizeX * SizeX;
+
                 Automatic = automatic;
 
                 Matrix = new Cell[SizeX, SizeY];
