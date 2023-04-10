@@ -84,6 +84,11 @@ namespace AutoSnake3
                     for (int x = 0; x < SizeX - 1; x++)
                         Matrix[x, 0].NextDirection = Direction.Right;
                 }
+
+                if (Tail.SnakeDirection != Tail.NextDirection)
+                    Head.ReverseCycle();
+
+                Debug.Assert(Tail.SnakeDirection == Tail.NextDirection);
             }
 
             void CalculatePath()

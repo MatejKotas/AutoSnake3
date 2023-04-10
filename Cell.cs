@@ -98,6 +98,21 @@ namespace AutoSnake3
 
             public bool Occupied(int tick) => SnakeTick >= tick;
 
+            internal void ReverseCycle()
+            {
+                Cell cell = this;
+
+                do
+                {
+                    Direction temp = cell.PreviousDirection;
+                    cell.PreviousDirection = cell.NextDirection;
+                    cell.nextDirection = temp;
+
+                    cell = cell.Next;
+                }
+                while (cell != this);
+            }
+
             public Cell? Move(Direction direction)
             {
                 return direction switch
