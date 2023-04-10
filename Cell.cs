@@ -131,7 +131,9 @@ namespace AutoSnake3
 
             static int Abs(int value) => value >= 0 ? value : -value;
 
-            IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            IEnumerator GetEnumerator() => new Enumerator(this);
 
             class Enumerator : IEnumerator
             {
