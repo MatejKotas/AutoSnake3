@@ -6,6 +6,8 @@ namespace AutoSnake3
     {
         public partial class Game
         {
+            internal int CycleDistanceIndexCounter = 0;
+
             void InitilizeAlgorithm()
             {
                 // Set neighbors

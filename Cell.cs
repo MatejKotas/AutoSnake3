@@ -43,13 +43,11 @@ namespace AutoSnake3
 
             internal int CycleDistance
             {
-                get => CycleDistanceIndex == CycleDistanceIndexCounter ? cycleDistance : int.MaxValue;
+                get => CycleDistanceIndex == parent.CycleDistanceIndexCounter ? cycleDistance : int.MaxValue;
             }
 
             internal int CycleDistanceIndex = -1;
             internal bool Seperated = false;
-
-            static int CycleDistanceIndexCounter = 0;
 
             internal Cell(int x, int y, Game parent)
             {
@@ -61,7 +59,7 @@ namespace AutoSnake3
             // Also sets seperated to false
             internal int SetDistance(Cell? stop, int startCount = 0) // Returns cycle length
             {
-                CycleDistanceIndexCounter++;
+                parent.CycleDistanceIndexCounter++;
 
                 int count = startCount;
                 Cell current = this;
@@ -74,7 +72,7 @@ namespace AutoSnake3
                 do
                 {
                     current.cycleDistance = count++;
-                    current.CycleDistanceIndex = CycleDistanceIndexCounter;
+                    current.CycleDistanceIndex = parent.CycleDistanceIndexCounter;
                     current.Seperated = false;
 
                     current = current.Next;
