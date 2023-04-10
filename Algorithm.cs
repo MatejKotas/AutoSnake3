@@ -112,7 +112,7 @@ namespace AutoSnake3
 
                     foreach (Cell neighbor in current.Neighbors!)
                     {
-                        if (neighbor.CycleDistance > current.CycleDistance && neighbor != current.Next && neighbor.CycleDistance <= Apple.CycleDistance && Splice(current, neighbor))
+                        if (neighbor.CycleDistance > current.CycleDistance && neighbor != current.Next && neighbor.CycleDistance <= Apple.CycleDistance && Splice(current, neighbor, directDistanceToApple))
                         {
                             Head.SetDistance(null);
                             changed = true;
@@ -132,7 +132,7 @@ namespace AutoSnake3
             }
 
             // Connects b.Previous to a.Next, a to b, and joins the two cycles somewhere else
-            bool Splice(Cell a, Cell b)
+            bool Splice(Cell a, Cell b, int directDistanceToApple)
             {
                 Debug.Assert(a != b);
 
@@ -156,7 +156,7 @@ namespace AutoSnake3
                 {
                     foreach (Cell neighbor in current.Neighbors!)
                     {
-                        if (!neighbor.Seperated && neighbor.CycleDistance > Apple.CycleDistance && neighbor.Previous.DistanceTo(current.Next) == 1 && Area - Length > neighbor.CycleDistance)
+                        if (!neighbor.Seperated && neighbor.CycleDistance > Apple.CycleDistance && neighbor.Previous.DistanceTo(current.Next) == 1 && Area - Length + directDistanceToApple > neighbor.CycleDistance)
                         {
                             Debug.Assert(neighbor.Previous.DistanceTo(current.Next) == 1);
 
