@@ -10,7 +10,12 @@ namespace AutoSnake3
 
             public bool gameOver = false;
 
-            public int Tick;
+            internal int Tick;
+
+            public int Moves
+            {
+                get => Tick + Length - StartingLength;
+            }
 
             public int Length = StartingLength;
             public const int StartingLength = 2;
@@ -280,7 +285,7 @@ namespace AutoSnake3
                 Console.ForegroundColor = ConsoleColor.White;
 
                 Console.WriteLine($"\n\n" +
-                          $"Ticks: { Tick + Length - StartingLength }\n" +
+                          $"Moves: { Moves }\n" +
                           $"Length: { Length }\n" +
                           $"Apples Collected: { Length - StartingLength }");
             }
