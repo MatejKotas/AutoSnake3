@@ -112,7 +112,10 @@ namespace AutoSnake3
 
                     foreach (Cell neighbor in current.Neighbors!)
                     {
-                        if (neighbor.CycleDistance > current.CycleDistance && neighbor != current.Next && neighbor.CycleDistance <= Apple.CycleDistance && Splice(current, neighbor, directDistanceToApple))
+                        if (neighbor.CycleDistance > current.CycleDistance
+                            && neighbor != current.Next
+                            && neighbor.CycleDistance <= Apple.CycleDistance
+                            && Splice(current, neighbor, directDistanceToApple))
                         {
                             Head.SetDistance(null);
                             changed = true;
@@ -159,7 +162,10 @@ namespace AutoSnake3
                 {
                     foreach (Cell neighbor in current.Neighbors!)
                     {
-                        if (!neighbor.Seperated && neighbor.CycleDistance > Apple.CycleDistance && neighbor.Previous.DistanceTo(current.Next) == 1 && Area - Length + directDistanceToApple > neighbor.CycleDistance)
+                        if (!neighbor.Seperated
+                             && neighbor.CycleDistance > Apple.CycleDistance
+                            && neighbor.Previous.DistanceTo(current.Next) == 1
+                            && Area - Length + directDistanceToApple > neighbor.CycleDistance)
                         {
                             Debug.Assert(neighbor.Previous.DistanceTo(current.Next) == 1);
 
