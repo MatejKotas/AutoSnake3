@@ -136,6 +136,9 @@ namespace AutoSnake3
             {
                 Debug.Assert(first != second);
 
+                //Print(true, false, true);
+                //Print(true, true, false);
+
                 if (second.Previous.DistanceTo(first.Next) > 1)
                     return false;
 
@@ -148,7 +151,7 @@ namespace AutoSnake3
                 first.NextDirection = splice;
                 cycle.NextDirection = ReverseDirection(splice);
 
-                cycle.SetSeperated(true);
+                cycle.SetSeperated(true, false);
 
                 Cell current = cycle;
 
@@ -160,10 +163,12 @@ namespace AutoSnake3
                         {
                             Debug.Assert(neighbor.Previous.DistanceTo(current.Next) == 1);
 
+                            cycle.SetSeperated(false, true);
+
                             neighbor.Previous.NextDirection = neighbor.Previous.DirectionTo(current.Next);
                             current.NextDirection = current.DirectionTo(neighbor);
 
-                            cycle.SetSeperated(false);
+                            first.SnakePath = splice;
 
                             return true;
                         }
@@ -173,7 +178,7 @@ namespace AutoSnake3
                 }
                 while (current != cycle);
 
-                cycle.SetSeperated(false);
+                cycle.SetSeperated(false, false);
 
                 first.NextDirection = splice2;
                 cycle.NextDirection = ReverseDirection(splice2);

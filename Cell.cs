@@ -11,6 +11,7 @@ namespace AutoSnake3
 
             internal int SnakeTick = -1;
             internal Direction SnakeDirection;
+            internal Direction SnakePath;
 
             public readonly int X;
             public readonly int Y;
@@ -82,13 +83,17 @@ namespace AutoSnake3
                 return startCount - count;
             }
 
-            internal void SetSeperated(bool value) // Returns cycle length
+            internal void SetSeperated(bool value, bool resetPath)
             {
                 Cell current = this;
 
                 do
                 {
                     current.Seperated = value;
+
+                    if (resetPath)
+                        current.SnakePath = Direction.None;
+
                     current = current.Next;
                 }
                 while (current != this);
