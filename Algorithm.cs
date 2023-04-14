@@ -139,9 +139,6 @@ namespace AutoSnake3
             {
                 Debug.Assert(first != second);
 
-                //Print(true, false, true);
-                //Print(true, true, false);
-
                 if (second.Previous.DistanceTo(first.Next) > 1)
                     return false;
 
@@ -153,6 +150,9 @@ namespace AutoSnake3
 
                 first.NextDirection = splice;
                 cycle.NextDirection = ReverseDirection(splice);
+
+                //Print(true, true, true);
+                //Print(false, false, true);
 
                 cycle.SetSeperated(true, false);
 
