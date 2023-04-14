@@ -132,10 +132,7 @@ namespace AutoSnake3
                 if (!Automatic)
                     throw new InvalidOperationException("Game not initilized in automatic mode. Pass in a direction, or initilize game in automatic mode.");
 
-                Direction move = Head.SnakePath == Direction.None ? Head.NextDirection : Head.SnakePath;
-                Head.SnakePath = Direction.None;
-
-                if (makeMove(move) && !gameOver)
+                if (makeMove(Head.NextDirection) && !gameOver)
                 {
                     Stopwatch elapsed = Stopwatch.StartNew();
 
@@ -189,7 +186,7 @@ namespace AutoSnake3
                 return false;
             }
 
-            public void Print(bool snake, bool path, bool cycle)
+            public void Print(bool snake, bool cycle)
             {
                 Console.ForegroundColor = ConsoleColor.Black;
                 Console.BackgroundColor = ConsoleColor.DarkGreen;
@@ -216,21 +213,13 @@ namespace AutoSnake3
                             Console.Write("**");
                         }
 
-                        else if ((snake && Matrix[x, y].Occupied()) || cycle || (path && Matrix[x, y].SnakePath != Direction.None))
+                        else if ((snake && Matrix[x, y].Occupied()) || cycle)
                         {
                             Direction d = Direction.None;
 
-                            if (path && Matrix[x, y].SnakePath != Direction.None)
-                                d = Matrix[x, y].SnakePath;
-
-                            else if (cycle)
-                                d = Matrix[x, y].NextDirection;
-
-                            else if (snake && Matrix[x, y].Occupied())
-                                d = Matrix[x, y].SnakeDirection;
-
                             if (snake && Matrix[x, y].Occupied())
                             {
+                                d = Matrix[x, y].SnakeDirection;
                                 Console.BackgroundColor = ConsoleColor.Green;
                                 Console.ForegroundColor = ConsoleColor.Black;
                             }
@@ -243,6 +232,9 @@ namespace AutoSnake3
                                 else
                                     Console.ForegroundColor = ConsoleColor.White;
                             }
+
+                            if (cycle)
+                                d = Matrix[x, y].NextDirection;
 
                             switch (d)
                             {
