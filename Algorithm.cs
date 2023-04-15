@@ -100,7 +100,7 @@ namespace AutoSnake3
             {
                 Head.SetDistance(null);
 
-                int directDistanceToApple = Head.DistanceTo(Apple);
+                int directDistanceToApple = ShortestPathLength(Head, Tick);
 
                 Cell current = Head;
 
@@ -152,7 +152,7 @@ namespace AutoSnake3
                 cycle.NextDirection = ReverseDirection(splice);
 
                 //Print(true, true);
-                
+
                 cycle.SetSeperated(true);
 
                 Cell current = cycle;
@@ -187,6 +187,60 @@ namespace AutoSnake3
                 cycle.NextDirection = ReverseDirection(splice2);
 
                 return false;
+            }
+
+            internal int StepIndexCounter = 0;
+
+            int ShortestPathLength(Cell start, int tick)
+            {
+                LinkedList<Cell> pending = new();
+                pending.AddLast(start);
+
+                StepIndexCounter++;
+
+                start.Step = 0;
+                start.StepIndex = StepIndexCounter;
+
+                while (pending.Count > 0)
+                {
+                    Cell current = pending.First!.Value;
+                    pending.RemoveFirst();
+
+                    foreach (Cell neighbor in current.Neighbors!)
+                    {
+                        if (neighbor.SnakeTick < tick + current.Step && neighbor.StepIndex != StepIndexCounter)
+                        {
+                            if (neighbor == Apple)
+                                return current.Step + 1;
+
+                            neighbor.StepIndex = StepIndexCounter;
+                            neighbor.Step = current.Step + 1;
+
+                            // Add at correct position
+
+                            int loss = neighbor.Step + neighbor.DistanceTo(Apple);
+
+                            LinkedListNode<Cell>? insertPoint = pending.First;
+
+                            while (insertPoint != null)
+                            {
+                                if (insertPoint.Value.Step + insertPoint.Value.DistanceTo(Apple) > loss)
+                                {
+                                    pending.AddBefore(insertPoint, neighbor);
+                                    goto next;
+                                }
+
+                                insertPoint = insertPoint.Next;
+                            }
+
+                            pending.AddLast(neighbor);
+
+                            next:;
+                        }
+                    }
+                }
+
+                throw new Exception("No path to apple found");
             }
         }
     }

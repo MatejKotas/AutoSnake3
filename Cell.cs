@@ -47,6 +47,17 @@ namespace AutoSnake3
             }
 
             internal int CycleDistanceIndex = -1;
+
+            int step;
+
+            internal int Step
+            {
+                get => StepIndex == parent.StepIndexCounter ? step : int.MaxValue;
+                set => step = value;
+            }
+
+            internal int StepIndex = -1;
+
             internal bool Seperated = false;
 
             internal Cell(int x, int y, Game parent)
