@@ -14,7 +14,7 @@
 
         static void Main(string[] args)
         {
-#if false
+#if true
 
             GameMode mode = GameMode.Unset;
 
@@ -33,18 +33,20 @@
                 };
             }
 
-            Game game = new(4, 4, mode == GameMode.Automatic);
+            Game game = new(12, 12, mode == GameMode.Automatic);
 
             if (mode == GameMode.Automatic)
             {
                 while (!game.gameOver)
                 {
-                    game.Print();
+                    game.Print(true, true);
                     (int elapsed, _) = game.MakeMove();
 
                     if (elapsed < TickDelay)
                         Thread.Sleep(TickDelay - elapsed);
                 }
+
+                game.Print(true, true);
             }
 
             else
@@ -52,7 +54,7 @@
                 Direction direction = Direction.Down;
 
                 if (mode == GameMode.ManualSingle)
-                    game.Print();
+                    game.Print(true, false);
 
                 while (!game.gameOver)
                 {
@@ -71,39 +73,41 @@
                     }
 
                     game.MakeMove(direction);
-                    game.Print();
+                    game.Print(true, false);
 
                     Thread.Sleep(TickDelay);
                 }
             }
         }
 
-#elif true
+#elif false
 
             Game? a = null;
 
             int seed = 0;
+            bool newApple = false;
 
             while (true)
             {
                 if (a == null || a.gameOver)
-                    a = new(30, 30, true, 1);
+                    a = new(12, 12, true, seed++);
 
-                if (a.Head.NextDirection != ReverseDirection(a.Head.PreviousDirection))
-                    Console.ReadLine();
+                (_, newApple) = a.MakeMove();
 
-                a.MakeMove();
-
-                if (a.Head.NextDirection != ReverseDirection(a.Head.PreviousDirection))
+                if (newApple || a.Head.NextDirection != ReverseDirection(a.Head.PreviousDirection))
+                {
                     a.Print(true, true);
+
+                    Console.ReadLine();
+                }
             }
         }
 
 #elif false
 
-            Game a = new(4, 4, true, 4);
+            Game a = new(12, 12, true, 0);
 
-            for (int i = 0; i < 0; i++)
+            for (int i = 0; i < 0 && !a.gameOver; i++)
                 a.MakeMove();
 
             a.Print(true, true);
@@ -111,67 +115,126 @@
             while (!a.gameOver)
             {
                 a.MakeMove();
+
                 a.Print(true, true);
             }
         }
 
 #elif false
 
-        Console.WriteLine("Start.");
+            Console.WriteLine("Start.");
 
-        for (int j = 0; j < threads; j++)
-        {
-            Thread t = new(new ThreadStart(RunTests))
+            for (int j = 0; j < threads; j++)
             {
-                IsBackground = false
-            };
+                Thread t = new(new ThreadStart(RunTests))
+                {
+                    IsBackground = false
+                };
 
-            t.Start();
-        }
-
-        lock (threadLock)
-            Console.WriteLine("Start complete.");
-    }
-
-    const int tests = 1000;
-    const int threads = 8;
-    const int sizeX = 6;
-    const int sizeY = 6;
-
-    static volatile bool running = true;
-    static volatile object threadLock = new();
-    static volatile int testCounter = 0;
-
-    static void RunTests()
-    {
-        int seed = -1;
-
-        while (running)
-        {
-            Monitor.Enter(threadLock);
-
-            testCounter++;
-
-            if (seed == -1)
-                Console.WriteLine($"Playing game { testCounter }.");
-            else
-                Console.WriteLine($"Playing game { testCounter }. Game { seed } complete.");
-            seed = testCounter;
-
-            if (testCounter == tests)
-            {
-                running = false;
-                Console.WriteLine("Finishing last simulations.");
+                t.Start();
             }
 
-            Monitor.Exit(threadLock);
-
-            Game game = new(sizeX, sizeY, true, seed);
-
-            while (!game.gameOver)
-                game.MakeMove(game.BestNextMove, true, iterations: 512);
+            lock (threadLock)
+                Console.WriteLine("Start complete.");
         }
-    }
+
+        const int tests = 1000;
+        const int threads = 8;
+        const int sizeX = 30;
+        const int sizeY = 30;
+
+        static volatile bool running = true;
+        static volatile int threadsRunning = threads;
+        static volatile object threadLock = new();
+        static volatile int testCounter = 0;
+        
+        static int totalMoves = 0;
+
+        static int minMoves = int.MaxValue;
+        static int minMovesSeed;
+
+        static int maxMoves = 0;
+        static int maxMovesSeed;
+
+        static void RunTests()
+        {
+            int seed = -1;
+            int moves = 0;
+
+            while (running)
+            {
+                Monitor.Enter(threadLock);
+
+                testCounter++;
+
+                if (seed == -1)
+                    Console.WriteLine($"Playing game { testCounter }.");
+                else
+                {
+                    Console.WriteLine($"Playing game { testCounter }. Game { seed } complete.");
+                    totalMoves += moves;
+                }
+
+                seed = testCounter;
+
+                if (testCounter == tests)
+                {
+                    running = false;
+                    Console.WriteLine("Finishing last games.");
+                }
+
+                Monitor.Exit(threadLock);
+
+                Game game = new(sizeX, sizeY, true, seed);
+
+                while (!game.gameOver)
+                    game.MakeMove();
+
+                if (game.Apple != null)
+                {
+                    lock (threadLock)
+                    {
+                        running = false;
+
+                        Console.WriteLine($"Seed: { seed }");
+                        game.Print(true, true);
+
+                        throw new Exception();
+                    }
+                }
+
+                moves = game.Moves;
+
+                if (minMoves > game.Moves)
+                {
+                    minMoves = game.Moves;
+                    minMovesSeed = seed;
+                }
+
+                if (maxMoves < game.Moves)
+                {
+                    maxMoves = game.Moves;
+                    maxMovesSeed = seed;
+                }
+            }
+
+            lock (threadLock)
+            {
+                threadsRunning--;
+
+                Console.WriteLine($"Game { seed } complete. Remaining games: { threadsRunning }");
+                totalMoves += moves;
+
+                if (threadsRunning == 0)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"All games complete.");
+                    Console.WriteLine($"Avg moves per game: { totalMoves / tests }");
+                    Console.WriteLine($"Max moves in a game: { maxMoves }. Seed: { maxMovesSeed }");
+                    Console.WriteLine($"Min moves in a game: { minMoves }. Seed: { minMovesSeed }");
+                }
+            }
+        }
 #endif
     }
 }
