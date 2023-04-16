@@ -93,16 +93,41 @@ namespace AutoSnake3
 
             void CalculatePath()
             {
-                OptimizePath();
+                Cell head = Head;
+
+                int previousDirectDistance = int.MinValue; // Bogus default value
+                int moves = 0;
+
+                while (head != Apple && head.Next != Apple && head.Next.Next != Apple)
+                {
+                    int directDistanceToApple = ShortestPathLength(head, Tick + moves);
+
+                    if (previousDirectDistance + 1 != directDistanceToApple)
+                        OptimizePath(head, directDistanceToApple);
+
+                    head.FutureSnakeTick = Tick + moves;
+
+                    previousDirectDistance = directDistanceToApple;
+                    head = head.Next;
+                    moves++;
+                }
+
+                head = Head;
+
+                while (head.Next != Apple && head.Next.Next != Apple)
+                {
+                    head.FutureSnakeTick = -1;
+                    head = head.Next;
+                }
+
+                Head.SetDistance(Apple);
             }
 
-            bool OptimizePath()
+            bool OptimizePath(Cell head, int directDistanceToApple)
             {
-                Head.SetDistance(null);
+                head.SetDistance(null);
 
-                int directDistanceToApple = ShortestPathLength(Head, Tick);
-
-                Cell current = Head;
+                Cell current = head;
 
                 bool changed = false;
 
@@ -117,12 +142,12 @@ namespace AutoSnake3
                             && neighbor.CycleDistance <= Apple.CycleDistance
                             && Splice(current, neighbor, directDistanceToApple))
                         {
-                            Head.SetDistance(null);
+                            head.SetDistance(null);
                             changed = true;
 
                             // It seems restarting is the best way to guarantee the whole path gets streched out fully
 
-                            current = Head;
+                            current = head;
 
                             goto restart;
                         }
@@ -171,8 +196,6 @@ namespace AutoSnake3
                             neighbor.Previous.NextDirection = neighbor.Previous.DirectionTo(current.Next);
                             current.NextDirection = current.DirectionTo(neighbor);
 
-                            cycle.SetSeperated(false);
-
                             return true;
                         }
                     }
@@ -208,7 +231,7 @@ namespace AutoSnake3
 
                     foreach (Cell neighbor in current.Neighbors!)
                     {
-                        if (neighbor.SnakeTick < tick + current.Step && neighbor.StepIndex != StepIndexCounter)
+                        if (!neighbor.Occupied(tick + current.Step) && neighbor.StepIndex != StepIndexCounter)
                         {
                             if (neighbor == Apple)
                                 return current.Step + 1;

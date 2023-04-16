@@ -186,8 +186,11 @@ namespace AutoSnake3
                 return false;
             }
 
-            public void Print(bool snake, bool cycle)
+            public void Print(bool snake, bool cycle, int tick = -1)
             {
+                if (tick == -1)
+                    tick = Tick;
+
                 Console.ForegroundColor = ConsoleColor.Black;
                 Console.BackgroundColor = ConsoleColor.DarkGreen;
 
@@ -213,11 +216,11 @@ namespace AutoSnake3
                             Console.Write("**");
                         }
 
-                        else if ((snake && Matrix[x, y].Occupied()) || cycle)
+                        else if ((snake && Matrix[x, y].Occupied(tick)) || cycle)
                         {
                             Direction d = Direction.None;
 
-                            if (snake && Matrix[x, y].Occupied())
+                            if (snake && Matrix[x, y].Occupied(tick))
                             {
                                 d = Matrix[x, y].SnakeDirection;
                                 Console.BackgroundColor = ConsoleColor.Green;

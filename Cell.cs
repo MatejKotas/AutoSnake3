@@ -58,6 +58,7 @@ namespace AutoSnake3
 
             internal int StepIndex = -1;
 
+            internal int FutureSnakeTick = -1;
             internal bool Seperated = false;
 
             internal Cell(int x, int y, Game parent)
@@ -105,9 +106,11 @@ namespace AutoSnake3
                 while (current != this);
             }
 
-            public bool Occupied() => Occupied(parent.Tick);
+            // Used for game
+            public bool Occupied() => SnakeTick >= parent.Tick;
 
-            public bool Occupied(int tick) => SnakeTick >= tick;
+            // Used for algorithm
+            public bool Occupied(int tick) => SnakeTick >= tick || FutureSnakeTick >= tick;
 
             internal void ReverseCycle()
             {
