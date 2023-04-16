@@ -102,7 +102,7 @@ namespace AutoSnake3
                 {
                     int directDistanceToApple = ShortestPathLength(head, Tick + moves);
 
-                    if (previousDirectDistance + 1 != directDistanceToApple)
+                    if (previousDirectDistance - 1 != directDistanceToApple)
                         OptimizePath(head, directDistanceToApple);
 
                     head.FutureSnakeTick = Tick + moves;
