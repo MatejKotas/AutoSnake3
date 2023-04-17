@@ -124,7 +124,7 @@
 
             Console.WriteLine("Start.");
 
-            for (int j = 0; j < threads; j++)
+            for (int j = 0; j < threads && j < tests; j++)
             {
                 Thread t = new(new ThreadStart(RunTests))
                 {
@@ -132,6 +132,8 @@
                 };
 
                 t.Start();
+
+                threadsRunning++;
             }
 
             lock (threadLock)
@@ -144,7 +146,7 @@
         const int sizeY = 30;
 
         static volatile bool running = true;
-        static volatile int threadsRunning = threads;
+        static volatile int threadsRunning;
         static volatile object threadLock = new();
         static volatile int testCounter = 0;
         
