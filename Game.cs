@@ -186,7 +186,9 @@ namespace AutoSnake3
                 return false;
             }
 
-            public void Print(bool snake, bool cycle, int tick = -1)
+            public void Print(bool snake = true, bool cycle = false) => DebugPrint(snake, cycle);
+
+            internal void DebugPrint(bool snake = true, bool cycle = false, bool step = false, bool cycleDistance = false, int tick = -1)
             {
                 if (tick == -1)
                     tick = Tick;
@@ -261,6 +263,22 @@ namespace AutoSnake3
                                     Console.Write("OO");
                                     break;
                             }
+                        }
+
+                        else if (step && Matrix[x, y].Step != int.MaxValue)
+                        {
+                            Console.BackgroundColor = ConsoleColor.Black;
+                            Console.ForegroundColor = ConsoleColor.White;
+                            
+                            Console.Write((Matrix[x, y].Step.ToString() + "  ")[..2]);
+                        }
+
+                        else if (cycleDistance && Matrix[x, y].CycleDistance != int.MaxValue)
+                        {
+                            Console.BackgroundColor = ConsoleColor.Black;
+                            Console.ForegroundColor = ConsoleColor.White;
+
+                            Console.Write((Matrix[x, y].CycleDistance.ToString() + "  ")[..2]);
                         }
 
                         else
