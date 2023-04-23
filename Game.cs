@@ -80,8 +80,6 @@ namespace AutoSnake3
 
                 NewApple();
 
-                Debug.Assert(Apple != null);
-
                 if (automatic)
                 {
                     InitilizeAlgorithm();

@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace AutoSnake3
 {
     public partial class Snake
@@ -87,8 +85,6 @@ namespace AutoSnake3
 
                 if (Tail.SnakeDirection != Tail.NextDirection)
                     Head.ReverseCycle();
-
-                Debug.Assert(Tail.SnakeDirection == Tail.NextDirection);
             }
 
             void CalculatePath()
@@ -172,8 +168,6 @@ namespace AutoSnake3
             // Connects second.Previous to first.Next, first to second, and splices the two resulting cycles somewhere else
             bool Splice(Cell first, Cell second, int directDistanceToApple)
             {
-                Debug.Assert(first != second);
-
                 if (second.Previous.DistanceTo(first.Next) > 1)
                     return false;
 
@@ -201,8 +195,6 @@ namespace AutoSnake3
                             && neighbor.Previous.DistanceTo(current.Next) == 1
                             && Area - Length + directDistanceToApple > neighbor.CycleDistance)
                         {
-                            Debug.Assert(neighbor.Previous.DistanceTo(current.Next) == 1);
-
                             neighbor.Previous.NextDirection = neighbor.Previous.DirectionTo(current.Next);
                             current.NextDirection = current.DirectionTo(neighbor);
 
