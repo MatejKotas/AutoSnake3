@@ -168,19 +168,12 @@ namespace AutoSnake3
             // Connects second.Previous to first.Next, first to second, and splices the two resulting cycles somewhere else
             bool TrySplice(Cell first, Cell second, int directDistanceToApple)
             {
-                if (second.Previous.DistanceTo(first.Next) > 1)
-                    return false;
-
-                Direction splice2 = first.NextDirection; // In case the splice fails
-
                 Cell cycle = second.Previous;
 
-                Direction splice = first.DirectionTo(second);
+                Splice splice = new(first, first.DirectionTo(second));
 
-                first.NextDirection = splice;
-                cycle.NextDirection = ReverseDirection(splice);
-
-                //Print(true, true);
+                if (splice.Origin == null)
+                    return false;
 
                 cycle.SetSeperated(true);
 
@@ -207,9 +200,7 @@ namespace AutoSnake3
                 while (current != cycle);
 
                 cycle.SetSeperated(false);
-
-                first.NextDirection = splice2;
-                cycle.NextDirection = ReverseDirection(splice2);
+                splice.Reset();
 
                 return false;
             }
