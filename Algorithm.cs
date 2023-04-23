@@ -146,7 +146,7 @@ namespace AutoSnake3
                         if (neighbor.CycleDistance > current.CycleDistance
                             && neighbor != current.Next
                             && neighbor.CycleDistance <= Apple.CycleDistance
-                            && Splice(current, neighbor, directDistanceToApple))
+                            && TrySplice(current, neighbor, directDistanceToApple))
                         {
                             head.SetDistance(null);
                             changed = true;
@@ -166,7 +166,7 @@ namespace AutoSnake3
             }
 
             // Connects second.Previous to first.Next, first to second, and splices the two resulting cycles somewhere else
-            bool Splice(Cell first, Cell second, int directDistanceToApple)
+            bool TrySplice(Cell first, Cell second, int directDistanceToApple)
             {
                 if (second.Previous.DistanceTo(first.Next) > 1)
                     return false;
