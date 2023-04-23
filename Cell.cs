@@ -22,6 +22,8 @@ namespace AutoSnake3
 
             internal Cell[]? Neighbors; // Only set in automatic mode
 
+            #region Next
+
             Direction nextDirection;
 
             internal Direction NextDirection
@@ -39,6 +41,10 @@ namespace AutoSnake3
             internal Direction PreviousDirection;
             internal Cell Previous { get => Move(PreviousDirection)!; }
 
+            #endregion
+
+            #region CycleDistance
+
             int cycleDistance;
 
             internal int CycleDistance
@@ -47,6 +53,10 @@ namespace AutoSnake3
             }
 
             internal int CycleDistanceIndex = -1;
+
+            #endregion
+
+            #region Step
 
             int step;
 
@@ -67,6 +77,8 @@ namespace AutoSnake3
 
             internal Cell[] StepSources = new Cell[4];
             internal int StepSourcesIndex = 0;
+
+            #endregion
 
             internal int FutureSnakeTick = -1;
             internal bool Seperated = false;
