@@ -96,31 +96,41 @@ namespace AutoSnake3
                 Cell head = Head;
 
                 int previousDirectDistance = int.MinValue; // Bogus default value
+
                 int moves = 0;
+                int movesSinceLastStep = 0;
+
+                StepIndexCounter++; // Clear Step
 
                 while (head != Apple && head.Next != Apple && head.Next.Next != Apple)
                 {
-                    int directDistanceToApple = ShortestPathLength(head, Tick + moves);
+                    head.FutureSnakeTick = Tick + moves + Length - 1;
 
-                    if (previousDirectDistance - 1 != directDistanceToApple)
-                        OptimizePath(head, directDistanceToApple);
+                    if (head.Step != movesSinceLastStep)
+                    {
+                        int directDistanceToApple = ShortestPathLength(head, Tick + moves);
 
-                    head.FutureSnakeTick = Tick + moves;
+                        if (previousDirectDistance - movesSinceLastStep != directDistanceToApple)
+                            OptimizePath(head, directDistanceToApple);
 
-                    previousDirectDistance = directDistanceToApple;
+                        movesSinceLastStep = 0;
+                        previousDirectDistance = directDistanceToApple;
+                    }
+
                     head = head.Next;
                     moves++;
+                    movesSinceLastStep++;
                 }
 
                 head = Head;
 
-                while (head.Next != Apple && head.Next.Next != Apple)
+                while (head != Apple && head.Next != Apple && head.Next.Next != Apple)
                 {
                     head.FutureSnakeTick = -1;
                     head = head.Next;
                 }
 
-                Head.SetDistance(Apple);
+                Head.SetDistance(Apple); // For printing
             }
 
             bool OptimizePath(Cell head, int directDistanceToApple)
@@ -231,39 +241,69 @@ namespace AutoSnake3
 
                     foreach (Cell neighbor in current.Neighbors!)
                     {
-                        if (!neighbor.Occupied(tick + current.Step) && neighbor.StepIndex != StepIndexCounter)
+                        if (!neighbor.Occupied(tick + current.Step))
                         {
-                            if (neighbor == Apple)
-                                return current.Step + 1;
-
-                            neighbor.StepIndex = StepIndexCounter;
-                            neighbor.Step = current.Step + 1;
-
-                            // Add at correct position
-
-                            int loss = neighbor.Step + neighbor.DistanceTo(Apple);
-
-                            LinkedListNode<Cell>? insertPoint = pending.First;
-
-                            while (insertPoint != null)
+                            if (neighbor.StepIndex != StepIndexCounter)
                             {
-                                if (insertPoint.Value.Step + insertPoint.Value.DistanceTo(Apple) > loss)
+                                if (neighbor == Apple)
                                 {
-                                    pending.AddBefore(insertPoint, neighbor);
-                                    goto next;
+                                    // Make only shortest path(s) have step value
+
+                                    ShortestPathTrace(current, current.Step, start);
+
+                                    StepIndexCounter++;
+                                    current.StepIndex = StepIndexCounter;
+
+                                    return current.Step + 1;
                                 }
 
-                                insertPoint = insertPoint.Next;
+                                neighbor.StepIndex = StepIndexCounter;
+                                neighbor.Step = current.Step + 1;
+                                neighbor.StepSources[0] = current;
+                                neighbor.StepSourcesIndex = 1;
+
+                                // Add to pending at correct position
+
+                                LinkedListNode<Cell>? insertPoint = pending.First;
+
+                                while (insertPoint != null)
+                                {
+                                    if (insertPoint.Value.StepLoss > neighbor.StepLoss)
+                                    {
+                                        pending.AddBefore(insertPoint, neighbor);
+                                        goto next;
+                                    }
+
+                                    insertPoint = insertPoint.Next;
+                                }
+
+                                pending.AddLast(neighbor);
+
+                                next:;
                             }
-
-                            pending.AddLast(neighbor);
-
-                            next:;
+                            else if (neighbor.Step == current.Step + 1)
+                                neighbor.StepSources[neighbor.StepSourcesIndex++] = current;
                         }
                     }
                 }
 
                 throw new Exception("No path to apple found");
+            }
+
+            void ShortestPathTrace(Cell current, int step, Cell start)
+            {
+                for (int i = 0; i < current.StepSourcesIndex; i++)
+                {
+                    Cell source = current.StepSources[i];
+
+                    if (source.StepIndex == StepIndexCounter)
+                    {
+                        source.StepIndex++;
+
+                        if (source != start)
+                            ShortestPathTrace(source, step - 1, start);
+                    }
+                }
             }
         }
     }

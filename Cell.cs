@@ -53,10 +53,20 @@ namespace AutoSnake3
             internal int Step
             {
                 get => StepIndex == parent.StepIndexCounter ? step : int.MaxValue;
-                set => step = value;
+                set
+                {
+                    step = value;
+                    StepLoss = value + DistanceTo(parent.Apple);
+                }
             }
 
             internal int StepIndex = -1;
+
+            // Sum of Step and distance to apple. Used in Game.ShorestPath
+            internal int StepLoss { get; private set; }
+
+            internal Cell[] StepSources = new Cell[4];
+            internal int StepSourcesIndex = 0;
 
             internal int FutureSnakeTick = -1;
             internal bool Seperated = false;
