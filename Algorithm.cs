@@ -87,6 +87,8 @@ namespace AutoSnake3
                     Head.ReverseCycle();
             }
 
+            LinkedList<Direction> MoveList = new LinkedList<Direction>();
+
             void CalculatePath()
             {
                 Cell head = Head;
@@ -107,29 +109,28 @@ namespace AutoSnake3
                         int directDistanceToApple = ShortestPathLength(head, Tick + moves);
 
                         if (previousDirectDistance - movesSinceLastStep != directDistanceToApple)
-                            OptimizePath(head, directDistanceToApple);
+                            OptimizePath(head, directDistanceToApple, Tick + moves, false);
+                        else
+                            OptimizePath(head, directDistanceToApple, Tick + moves, true);
 
                         movesSinceLastStep = 0;
                         previousDirectDistance = directDistanceToApple;
                     }
+                    else
+                        OptimizePath(head, previousDirectDistance - movesSinceLastStep, Tick + moves, true);
+
+
+                    MoveList.AddLast(head.NextDirection);
 
                     head = head.Next;
                     moves++;
                     movesSinceLastStep++;
                 }
 
-                head = Head;
-
-                while (head != Apple && head.Next != Apple && head.Next.Next != Apple)
-                {
-                    head.FutureSnakeTick = -1;
-                    head = head.Next;
-                }
-
-                Head.SetDistance(Apple); // For printing
+                head.SetDistance(Apple, moves); // For printing
             }
 
-            bool OptimizePath(Cell head, int directDistanceToApple)
+            bool OptimizePath(Cell head, int directDistanceToApple, int tick, bool onlyBoxCut)
             {
                 head.SetDistance(null);
 
@@ -137,21 +138,42 @@ namespace AutoSnake3
 
                 bool changed = false;
 
-                while (current.CycleDistance <= Apple.CycleDistance - 3 && Apple.CycleDistance > directDistanceToApple)
+                while (current.CycleDistance <= Apple.CycleDistance && Apple.CycleDistance > directDistanceToApple)
                 {
                     restart:
 
-                    foreach (Cell neighbor in current.Neighbors!)
+                    if (!onlyBoxCut && current.CycleDistance <= Apple.CycleDistance - 3)
                     {
-                        if (neighbor.CycleDistance > current.CycleDistance
-                            && neighbor != current.Next
-                            && neighbor.CycleDistance <= Apple.CycleDistance
-                            && TrySplice(current, neighbor, directDistanceToApple))
+                        foreach (Cell neighbor in current.Neighbors!)
+                        {
+                            if (neighbor.CycleDistance > current.CycleDistance
+                                && neighbor != current.Next
+                                && neighbor.CycleDistance <= Apple.CycleDistance)
+
+                            {
+                                (bool succeeded, _, _) = TrySplice(current, current.DirectionTowards(neighbor), directDistanceToApple);
+
+                                if (succeeded)
+                                {
+                                    head.SetDistance(null);
+                                    changed = true;
+
+                                    // It seems restarting is the best way to guarantee the whole path gets streched out fully
+
+                                    current = head;
+
+                                    goto restart;
+                                }
+                            }
+                        }
+                    }
+
+                    if (head != current && (head.X == current.X || head.Y == current.Y) && head.DistanceTo(current) > 1)
+                    {
+                        if (TryBoxCut(head, current, tick, directDistanceToApple))
                         {
                             head.SetDistance(null);
                             changed = true;
-
-                            // It seems restarting is the best way to guarantee the whole path gets streched out fully
 
                             current = head;
 
@@ -165,33 +187,97 @@ namespace AutoSnake3
                 return changed;
             }
 
-            // Connects second.Previous to first.Next, first to second, and splices the two resulting cycles somewhere else
-            bool TrySplice(Cell first, Cell second, int directDistanceToApple)
+            bool TryBoxCut(Cell start, Cell end, int tick, int directDistanceToApple)
             {
+                Direction direction = start.DirectionTowards(end);
+
+                if (start.NextDirection == direction || end.NextDirection == ReverseDirection(direction))
+                    return false;
+
+                int moves = 0;
+
+                Cell current = start;
+
+                while (true)
+                {
+                    current = current.Move(direction)!;
+                    moves++;
+
+                    if (current == end)
+                        break;
+
+                    if (current.Occupied(tick + moves - 1) || current.CycleDistance <= Apple.CycleDistance)
+                        return false;
+                }
+
+                current = start;
+                moves = 0;
+
+                LinkedList<Splice> splices = new();
+
+                do
+                {
+                    if (current.NextDirection != direction)
+                    {
+                        start.SetDistance(null);
+
+                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(current, direction, directDistanceToApple - moves);
+
+                        if (succeeded)
+                        {
+                            splices.AddFirst(main);
+                            splices.AddFirst((Splice)(secondary!));
+                        }
+                        else
+                        {
+                            foreach (var splice in splices)
+                                splice.Reset();
+
+                            start.SetDistance(null);
+
+                            return false;
+                        }
+                    }
+
+                    current = current.Move(direction)!;
+                    moves++;
+                }
+                while (current != end);
+
+                return true;
+            }
+
+            // Connects second.Previous to first.Next, first to second, and splices the two resulting cycles somewhere else
+            // If splice fails, returns splice with null origin
+            (bool succeeded, Splice main, Splice? secondary) TrySplice(Cell first, Direction direction, int directDistanceToApple)
+            {
+                Cell second = first.Move(direction)!;
                 Cell cycle = second.Previous;
 
-                Splice splice = new(first, first.DirectionTo(second));
+                Splice main = new(first, direction);
 
-                if (splice.Origin == null)
-                    return false;
+                if (main.Origin == null)
+                    return (false, main, null);
 
                 cycle.SetSeperated(true);
 
-                Cell current = cycle;
+                Cell current = cycle.Next;
 
                 do
                 {
                     foreach (Cell neighbor in current.Neighbors!)
                     {
                         if (!neighbor.Seperated
-                             && neighbor.CycleDistance > Apple.CycleDistance
+                            && neighbor.CycleDistance > Apple.CycleDistance
                             && neighbor.Previous.DistanceTo(current.Next) == 1
                             && Area - Length + directDistanceToApple > neighbor.CycleDistance)
                         {
-                            neighbor.Previous.NextDirection = neighbor.Previous.DirectionTo(current.Next);
-                            current.NextDirection = current.DirectionTo(neighbor);
+                            Splice secondary = new(current, current.DirectionTowards(neighbor));
 
-                            return true;
+                            //neighbor.Previous.NextDirection = neighbor.Previous.DirectionTowards(current.Next);
+                            //current.NextDirection = current.DirectionTowards(neighbor);
+
+                            return (true, main, secondary);
                         }
                     }
 
@@ -200,9 +286,9 @@ namespace AutoSnake3
                 while (current != cycle);
 
                 cycle.SetSeperated(false);
-                splice.Reset();
+                main.Reset();
 
-                return false;
+                return (false, main, null);
             }
 
             internal int StepIndexCounter = 0;

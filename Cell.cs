@@ -55,6 +55,8 @@ namespace AutoSnake3
 
             #endregion
 
+            internal bool Seperated = false;
+
             #region Step
 
             int step;
@@ -80,7 +82,6 @@ namespace AutoSnake3
             #endregion
 
             internal int FutureSnakeTick = -1;
-            internal bool Seperated = false;
 
             internal Cell(int x, int y, Game parent)
             {
@@ -160,18 +161,18 @@ namespace AutoSnake3
                 };
             }
 
-            internal Direction DirectionTo(Cell target)
+            internal Direction DirectionTowards(Cell target)
             {
-                if (target == Up)
+                if (target.Y > Y)
                     return Direction.Up;
 
-                else if (target == Right)
+                else if (target.X > X)
                     return Direction.Right;
 
-                else if (target == Down)
+                else if (target.Y < Y)
                     return Direction.Down;
 
-                else if (target == Left)
+                else if (target.X < X)
                     return Direction.Left;
 
                 return Direction.None;

@@ -11,6 +11,7 @@ namespace AutoSnake3
             public bool gameOver = false;
 
             internal int Tick;
+            internal int TickAtLastApple { get; private set; }
 
             public int Moves
             {
@@ -123,6 +124,8 @@ namespace AutoSnake3
                     Apple = null!;
                     gameOver = true;
                 }
+
+                TickAtLastApple = Tick;
             }
 
             public (int, bool) MakeMove()
@@ -130,7 +133,14 @@ namespace AutoSnake3
                 if (!Automatic)
                     throw new InvalidOperationException("Game not initilized in automatic mode. Pass in a direction, or initilize game in automatic mode.");
 
-                if (makeMove(Head.NextDirection) && !gameOver)
+                Direction move = NextMove;
+
+                if (MoveList.Count > 0)
+                    MoveList.RemoveFirst();
+
+                Head.FutureSnakeTick = -1;
+
+                if (makeMove(move) && !gameOver)
                 {
                     Stopwatch elapsed = Stopwatch.StartNew();
 
@@ -184,12 +194,13 @@ namespace AutoSnake3
                 return false;
             }
 
-            public void Print(bool snake = true, bool cycle = false) => DebugPrint(snake, cycle);
+            public Direction NextMove { get => MoveList.Count > 0 ? MoveList.First!.Value : Head.NextDirection; }
+
+            public void Print(bool snake = true, bool cycle = false) => DebugPrint(snake: snake, cycle: cycle);
 
             internal void DebugPrint(bool snake = true, bool cycle = false, bool step = false, bool cycleDistance = false, int tick = -1)
             {
-                if (tick == -1)
-                    tick = Tick;
+                int actualTick = tick == -1 ? Tick : tick;
 
                 Console.ForegroundColor = ConsoleColor.Black;
                 Console.BackgroundColor = ConsoleColor.DarkGreen;
@@ -209,6 +220,8 @@ namespace AutoSnake3
 
                     for (int x = 0; x < SizeX; x++)
                     {
+                        bool occupied = tick == -1 ? Matrix[x, y].Occupied() : Matrix[x, y].Occupied(tick);
+
                         if (snake && Apple == Matrix[x, y])
                         {
                             Console.BackgroundColor = ConsoleColor.Red;
@@ -216,13 +229,14 @@ namespace AutoSnake3
                             Console.Write("**");
                         }
 
-                        else if ((snake && Matrix[x, y].Occupied(tick)) || cycle)
+                        else if ((snake && occupied) || cycle)
                         {
                             Direction d = Direction.None;
 
-                            if (snake && Matrix[x, y].Occupied(tick))
+                            if (snake && occupied)
                             {
                                 d = Matrix[x, y].SnakeDirection;
+
                                 Console.BackgroundColor = ConsoleColor.Green;
                                 Console.ForegroundColor = ConsoleColor.Black;
                             }
@@ -230,8 +244,12 @@ namespace AutoSnake3
                             {
                                 Console.BackgroundColor = ConsoleColor.Black;
 
-                                if (cycle && Matrix[x, y].CycleDistance <= Apple.CycleDistance)
+                                if (cycle && Matrix[x, y].Occupied(actualTick))
+                                    Console.ForegroundColor = ConsoleColor.Green;
+
+                                else if (cycle && Matrix[x, y].CycleDistance < Apple.CycleDistance && Matrix[x, y].CycleDistance > actualTick - TickAtLastApple)
                                     Console.ForegroundColor = ConsoleColor.Blue;
+
                                 else
                                     Console.ForegroundColor = ConsoleColor.White;
                             }
@@ -267,7 +285,7 @@ namespace AutoSnake3
                         {
                             Console.BackgroundColor = ConsoleColor.Black;
                             Console.ForegroundColor = ConsoleColor.White;
-                            
+
                             Console.Write((Matrix[x, y].Step.ToString() + "  ")[..2]);
                         }
 

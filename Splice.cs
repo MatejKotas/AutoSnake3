@@ -16,7 +16,7 @@
                     OldDirection = origin.NextDirection;
                     NewDirection = newDirection;
 
-                    if (origin.NextDirection == newDirection || origin.Move(newDirection)!.Previous.DistanceTo(origin.Next) > 1)
+                    if (origin.Move(newDirection)!.Previous.DistanceTo(origin.Next) > 1)
                     {
                         Origin = null;
 
@@ -24,9 +24,7 @@
                     }
 
                     Origin = origin;
-
                     origin.Move(newDirection)!.Previous.NextDirection = ReverseDirection(newDirection);
-
                     origin.NextDirection = newDirection;
                 }
 

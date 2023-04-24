@@ -92,9 +92,11 @@
                 if (a == null || a.gameOver)
                     a = new(12, 12, true, seed++);
 
+                Direction lastMove = a.NextMove;
+
                 (_, newApple) = a.MakeMove();
 
-                if (newApple || a.Head.NextDirection != ReverseDirection(a.Head.PreviousDirection))
+                if (newApple || lastMove != a.NextMove)
                 {
                     a.Print(true, true);
 
@@ -116,7 +118,7 @@
             {
                 a.MakeMove();
 
-                a.Print(true, true);
+                a.DebugPrint(true, true, true);
             }
         }
 
