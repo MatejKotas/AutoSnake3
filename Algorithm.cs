@@ -87,13 +87,13 @@ namespace AutoSnake3
                     Head.ReverseCycle();
             }
 
-            LinkedList<Direction> MoveList = new LinkedList<Direction>();
+            LinkedList<Direction> MoveList = new();
 
             void CalculatePath()
             {
                 Cell head = Head;
 
-                int previousDirectDistance = int.MinValue; // Bogus default value
+                int directDistanceToApple = int.MinValue; // Bogus default value
 
                 int moves = 0;
                 int movesSinceLastStep = 0;
@@ -106,18 +106,18 @@ namespace AutoSnake3
 
                     if (head.Step != movesSinceLastStep)
                     {
-                        int directDistanceToApple = ShortestPathLength(head, Tick + moves);
+                        int updatedDirectDistanceToApple = ShortestPathLength(head, Tick + moves);
 
-                        if (previousDirectDistance - movesSinceLastStep != directDistanceToApple)
-                            OptimizePath(head, directDistanceToApple, Tick + moves, false);
+                        if (directDistanceToApple != updatedDirectDistanceToApple)
+                            OptimizePath(head, updatedDirectDistanceToApple, moves, false);
                         else
-                            OptimizePath(head, directDistanceToApple, Tick + moves, true);
+                            OptimizePath(head, updatedDirectDistanceToApple, moves, true);
 
                         movesSinceLastStep = 0;
-                        previousDirectDistance = directDistanceToApple;
+                        directDistanceToApple = updatedDirectDistanceToApple;
                     }
                     else
-                        OptimizePath(head, previousDirectDistance - movesSinceLastStep, Tick + moves, true);
+                        OptimizePath(head, directDistanceToApple, moves, true);
 
 
                     MoveList.AddLast(head.NextDirection);
@@ -125,18 +125,17 @@ namespace AutoSnake3
                     head = head.Next;
                     moves++;
                     movesSinceLastStep++;
+                    directDistanceToApple--;
                 }
 
                 head.SetDistance(Apple, moves); // For printing
             }
 
-            bool OptimizePath(Cell head, int directDistanceToApple, int tick, bool onlyBoxCut)
+            void OptimizePath(Cell head, int directDistanceToApple, int moves, bool onlyBoxCut)
             {
                 head.SetDistance(null);
 
                 Cell current = head;
-
-                bool changed = false;
 
                 while (current.CycleDistance <= Apple.CycleDistance && Apple.CycleDistance > directDistanceToApple)
                 {
@@ -156,7 +155,6 @@ namespace AutoSnake3
                                 if (succeeded)
                                 {
                                     head.SetDistance(null);
-                                    changed = true;
 
                                     // It seems restarting is the best way to guarantee the whole path gets streched out fully
 
@@ -170,11 +168,8 @@ namespace AutoSnake3
 
                     if (head != current && (head.X == current.X || head.Y == current.Y) && head.DistanceTo(current) > 1)
                     {
-                        if (TryBoxCut(head, current, tick, directDistanceToApple))
+                        if (TryBoxCut(head, current, moves, directDistanceToApple))
                         {
-                            head.SetDistance(null);
-                            changed = true;
-
                             current = head;
 
                             goto restart;
@@ -183,35 +178,34 @@ namespace AutoSnake3
 
                     current = current.Next;
                 }
-
-                return changed;
             }
 
-            bool TryBoxCut(Cell start, Cell end, int tick, int directDistanceToApple)
+            bool TryBoxCut(Cell head, Cell target, int moves, int directDistanceToApple)
             {
-                Direction direction = start.DirectionTowards(end);
+                Direction direction = head.DirectionTowards(target);
 
-                if (start.NextDirection == direction || end.NextDirection == ReverseDirection(direction))
+                if (head.NextDirection == direction || target.NextDirection == ReverseDirection(direction))
                     return false;
 
-                int moves = 0;
+                int tick = Tick + moves;
+                int splicedLength = 0;
 
-                Cell current = start;
+                Cell current = head;
 
                 while (true)
                 {
                     current = current.Move(direction)!;
-                    moves++;
+                    splicedLength++;
 
-                    if (current == end)
+                    if (current == target)
                         break;
 
-                    if (current.Occupied(tick + moves - 1) || current.CycleDistance <= Apple.CycleDistance)
+                    if (current.Occupied(tick + splicedLength - 1) || current.CycleDistance <= Apple.CycleDistance)
                         return false;
                 }
 
-                current = start;
-                moves = 0;
+                current = head;
+                splicedLength = 0;
 
                 LinkedList<Splice> splices = new();
 
@@ -219,30 +213,30 @@ namespace AutoSnake3
                 {
                     if (current.NextDirection != direction)
                     {
-                        start.SetDistance(null);
-
-                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(current, direction, directDistanceToApple - moves);
+                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(current, direction, directDistanceToApple - splicedLength);
 
                         if (succeeded)
                         {
                             splices.AddFirst(main);
                             splices.AddFirst((Splice)(secondary!));
+
+                            head.SetDistance(null);
                         }
                         else
                         {
                             foreach (var splice in splices)
                                 splice.Reset();
 
-                            start.SetDistance(null);
+                            head.SetDistance(null);
 
                             return false;
                         }
                     }
 
                     current = current.Move(direction)!;
-                    moves++;
+                    splicedLength++;
                 }
-                while (current != end);
+                while (current != target);
 
                 return true;
             }
@@ -273,9 +267,6 @@ namespace AutoSnake3
                             && Area - Length + directDistanceToApple > neighbor.CycleDistance)
                         {
                             Splice secondary = new(current, current.DirectionTowards(neighbor));
-
-                            //neighbor.Previous.NextDirection = neighbor.Previous.DirectionTowards(current.Next);
-                            //current.NextDirection = current.DirectionTowards(neighbor);
 
                             return (true, main, secondary);
                         }
