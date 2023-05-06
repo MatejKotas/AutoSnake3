@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace AutoSnake3
 {
-    static partial class Snake
+    public static partial class Snake
     {
         public partial class Game
         {

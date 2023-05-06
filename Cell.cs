@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace AutoSnake3
 {
-    static partial class Snake
+    public static partial class Snake
     {
         public class Cell : IEnumerable // Enumerates the cells in the order of the hamiltonian cycle we are following
         {

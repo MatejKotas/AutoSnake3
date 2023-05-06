@@ -1,6 +1,6 @@
 ﻿namespace AutoSnake3
 {
-    static partial class Snake
+    public static partial class Snake
     {
         const int TickDelay = 400;
 

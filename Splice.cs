@@ -1,6 +1,6 @@
 ﻿namespace AutoSnake3
 {
-    public partial class Snake
+    public static partial class Snake
     {
         public partial class Game
         {
