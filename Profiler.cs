@@ -4,10 +4,24 @@ namespace AutoSnake3
     {
         public class Profiler
         {
+            public class Result : IComparable
+            {
+                public int Seed { get; init; }
+                public int Moves { get; init; }
+
+                public Result(int seed, int moves)
+                {
+                    Seed = seed;
+                    Moves = moves;
+                }
+
+                public int CompareTo(object? obj) => Moves.CompareTo((obj as Result)?.Moves);
+            }
+
             public int Threads { get; init; }
             public int ThreadsRunning { get; private set; }
 
-            public List<int> Moves { get; init; }
+            public List<Result> Games { get; init; }
             object ThreadLock = new();
 
             int NextSeed;
@@ -24,7 +38,7 @@ namespace AutoSnake3
                 SizeX = sizeX;
                 SizeY = sizeY;
 
-                Moves = new();
+                Games = new();
             }
 
             public delegate void ProfilerCallback();
@@ -73,7 +87,7 @@ namespace AutoSnake3
 
                     Monitor.Enter(ThreadLock);
 
-                    Moves.Add(game.Moves);
+                    Games.Add(new(seed, game.Moves));
                     GamesComplete++;
 
                     if (print)
@@ -99,30 +113,35 @@ namespace AutoSnake3
 
             public void PrintResults()
             {
-                float mean = (float)Moves.Average();
+                Games.Sort();
+
+                float mean = 0;
+
+                foreach (Result g in Games)
+                    mean += g.Moves;
+
+                mean /= Games.Count;
 
                 float standardDeviation = 0;
 
-                foreach (int m in Moves)
-                    standardDeviation += MathF.Pow(mean - m, 2);
+                foreach (Result g in Games)
+                    standardDeviation += MathF.Pow(mean - g.Moves, 2);
 
-                standardDeviation = MathF.Sqrt(standardDeviation / Moves.Count);
-
-                Moves.Sort();
+                standardDeviation = MathF.Sqrt(standardDeviation / Games.Count);
 
                 float median;
 
-                if (Moves.Count % 2 == 0)
-                    median = ((float)(Moves[Moves.Count / 2] + Moves[Moves.Count / 2 - 1])) / 2;
+                if (Games.Count % 2 == 0)
+                    median = ((float)(Games[Games.Count / 2].Moves + Games[Games.Count / 2 - 1].Moves)) / 2;
                 else
-                    median = Moves[Moves.Count / 2];
+                    median = Games[Games.Count / 2].Moves;
 
                 Tuple<string, float>[] data = {
                     new("Mean", mean),
                     new("Standard Deviation", standardDeviation),
-                    new("Minimum", Moves.Min()),
+                    new("Minimum", Games[0].Moves),
                     new("Median", median),
-                    new("Maximum", Moves.Max())
+                    new("Maximum", Games[Games.Count - 1].Moves)
                 };
 
                 string headers = "|";
@@ -154,6 +173,16 @@ namespace AutoSnake3
                 Console.WriteLine(headers);
                 Console.WriteLine(seperators);
                 Console.WriteLine(values);
+                Console.WriteLine();
+                Console.WriteLine($"Minimum moves game seed: { Games[0].Seed }");
+
+                if (Games.Count % 2 == 0)
+                    Console.WriteLine($"Median moves game seeds: { Games[Games.Count / 2].Seed } and { Games[Games.Count / 2 - 1].Seed }");
+
+                else
+                    Console.WriteLine($"Median moves game seed: { Games[Games.Count / 2].Seed }");
+
+                Console.WriteLine($"Maximum moves game seed: { Games[Games.Count - 1].Seed }");
             }
         }
     }
