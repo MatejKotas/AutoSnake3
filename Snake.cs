@@ -75,7 +75,8 @@
                     game.MakeMove(direction);
                     game.Print(true, false);
 
-                    Thread.Sleep(TickDelay);
+                    if (mode == GameMode.Manual)
+                        Thread.Sleep(TickDelay);
                 }
             }
         }
