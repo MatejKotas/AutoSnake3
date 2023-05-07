@@ -126,12 +126,14 @@ namespace AutoSnake3
                 };
 
                 string headers = "|";
+                string seperators = "|";
                 string values = "|";
 
                 foreach (Tuple<string, float> t in data)
                 {
                     string value = MathF.Round(t.Item2, 2).ToString();
                     string name = t.Item1;
+                    string seperator = "";
 
                     if (name.Length > value.Length)
                         while (name.Length > value.Length)
@@ -141,11 +143,16 @@ namespace AutoSnake3
                         while (value.Length > name.Length)
                             name += " ";
 
+                    while (name.Length > seperator.Length)
+                        seperator += "-";
+
                     headers += " " + name + " |";
+                    seperators += " " + seperator + " |";
                     values += " " + value + " |";
                 }
 
                 Console.WriteLine(headers);
+                Console.WriteLine(seperators);
                 Console.WriteLine(values);
             }
         }
