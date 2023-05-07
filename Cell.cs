@@ -128,11 +128,31 @@ namespace AutoSnake3
                 while (current != this);
             }
 
+            #region Occupied
+
             // Used for game
             public bool Occupied() => SnakeTick >= parent.Tick;
 
             // Used for algorithm
             public bool Occupied(int tick) => SnakeTick >= tick || FutureSnakeTick >= tick;
+
+            public int OccupiedNeighbors()
+            {
+                int result = 0;
+
+                if (Up == null || Up.Occupied())
+                    result++;
+                if (Right == null || Right.Occupied())
+                    result++;
+                if (Down == null || Down.Occupied())
+                    result++;
+                if (Left == null || Left.Occupied())
+                    result++;
+
+                return result;
+            }
+
+            #endregion
 
             internal void ReverseCycle()
             {

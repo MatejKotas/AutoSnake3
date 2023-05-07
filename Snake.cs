@@ -7,9 +7,10 @@
         public enum GameMode
         {
             Unset,
-            Manual = 1,
-            ManualSingle = 2,
-            Automatic = 3
+            Manual,
+            ManualSingle,
+            ManualSingleAssisted,
+            Automatic
         }
 
         static void Main(string[] args)
@@ -22,18 +23,20 @@
             {
                 Console.WriteLine("1. Manual");
                 Console.WriteLine("2. Manual single-step");
-                Console.WriteLine("3. Automatic");
+                Console.WriteLine("3. Manual single-step with assistance");
+                Console.WriteLine("4. Automatic");
 
                 mode = Console.ReadLine() switch
                 {
                     "1" => GameMode.Manual,
                     "2" => GameMode.ManualSingle,
-                    "3" => GameMode.Automatic,
+                    "3" => GameMode.ManualSingleAssisted,
+                    "4" => GameMode.Automatic,
                     _ => GameMode.Unset
                 };
             }
 
-            Game game = new(12, 12, mode == GameMode.Automatic);
+            Game game = new(8, 8, mode == GameMode.Automatic);
 
             if (mode == GameMode.Automatic)
             {
@@ -53,12 +56,13 @@
             {
                 Direction direction = Direction.Down;
 
-                if (mode == GameMode.ManualSingle)
+                if (mode == GameMode.ManualSingle || mode == GameMode.ManualSingleAssisted)
                     game.Print(true, false);
 
                 while (!game.gameOver)
                 {
-                    while (mode == GameMode.ManualSingle && !Console.KeyAvailable) { Thread.Sleep(1); }
+                    if (mode == GameMode.ManualSingle || mode == GameMode.ManualSingleAssisted)
+                        while (!Console.KeyAvailable) { Thread.Sleep(1); }
 
                     if (Console.KeyAvailable)
                     {
@@ -72,7 +76,26 @@
                         };
                     }
 
+                    if (mode == GameMode.ManualSingleAssisted && game.Head.OccupiedNeighbors() < 4 && (game.Head.Move(direction) == null || game.Head.Move(direction)!.Occupied()))
+                        continue;
+
                     game.MakeMove(direction);
+
+                    if (mode == GameMode.ManualSingleAssisted && game.Head.OccupiedNeighbors() == 3)
+                    {
+                        while (game.Head.OccupiedNeighbors() == 3)
+                        {
+                            foreach (Cell neighbor in game.Head.Neighbors!)
+                            {
+                                if (!neighbor.Occupied())
+                                {
+                                    game.MakeMove(game.Head.DirectionTowards(neighbor));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     game.Print(true, false);
 
                     if (mode == GameMode.Manual)

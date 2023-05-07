@@ -8,27 +8,6 @@ namespace AutoSnake3
 
             void InitilizeAlgorithm()
             {
-                // Set neighbors
-
-                foreach (Cell c in Matrix)
-                {
-                    List<Cell> neighbors = new();
-
-                    if (c.Up != null)
-                        neighbors.Add(c.Up);
-
-                    if (c.Right != null)
-                        neighbors.Add(c.Right);
-
-                    if (c.Down != null)
-                        neighbors.Add(c.Down);
-
-                    if (c.Left != null)
-                        neighbors.Add(c.Left);
-
-                    c.Neighbors = neighbors.ToArray();
-                }
-
                 // Set starting hamiltonian cycle
 
                 if (SizeX % 2 == 1 && SizeY % 2 == 1)
