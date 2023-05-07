@@ -36,7 +36,7 @@
                 };
             }
 
-            Game game = new(8, 8, mode == GameMode.Automatic);
+            Game game = new(12, 12, mode == GameMode.Automatic);
 
             if (mode == GameMode.Automatic)
             {
