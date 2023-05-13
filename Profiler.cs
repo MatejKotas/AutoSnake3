@@ -51,7 +51,7 @@ namespace AutoSnake3
 
                 for (; ThreadsRunning < Threads; ThreadsRunning++)
                 {
-                    Thread t = new(() => WorkerThread(print, callback)) { IsBackground = false };
+                    Thread t = new(() => WorkerThread(print, callback)) { IsBackground = false, Name = $"Profiler Thread { ThreadsRunning }" };
                     t.Start();
                 }
 
