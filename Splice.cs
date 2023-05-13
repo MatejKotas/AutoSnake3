@@ -6,7 +6,7 @@
         {
             internal struct Splice
             {
-                internal Cell? Origin;
+                internal Cell? Origin = null;
 
                 internal Direction OldDirection;
                 internal Direction NewDirection;
@@ -17,11 +17,7 @@
                     NewDirection = newDirection;
 
                     if (origin.Move(newDirection)!.Previous.DistanceTo(origin.Next) > 1)
-                    {
-                        Origin = null;
-
                         return;
-                    }
 
                     Origin = origin;
                     origin.Move(newDirection)!.Previous.NextDirection = ReverseDirection(newDirection);
