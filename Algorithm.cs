@@ -66,7 +66,7 @@ namespace AutoSnake3
                     Head.ReverseCycle();
             }
 
-            LinkedList<Direction> MoveList = new();
+            readonly LinkedList<Direction> MoveList = new();
 
             void CalculatePath()
             {
@@ -74,125 +74,96 @@ namespace AutoSnake3
 
                 int directDistanceToApple = int.MinValue; // Bogus default value
 
-                int moves = 0;
+                int tick = Tick;
                 int movesSinceLastStep = 0;
 
                 StepIndexCounter++; // Clear Step
 
                 while (head != Apple && head.Next != Apple && head.Next.Next != Apple)
                 {
-                    head.FutureSnakeTick = Tick + moves + Length - 1;
+                    head.FutureSnakeTick = tick + Length - 1;
 
                     if (head.Step != movesSinceLastStep)
                     {
-                        int updatedDirectDistanceToApple = ShortestPathLength(head, Tick + moves);
+                        int updatedDirectDistanceToApple = ShortestPathLength(head, tick);
 
-                        if (directDistanceToApple != updatedDirectDistanceToApple)
-                            OptimizePath(head, updatedDirectDistanceToApple, moves, false);
-                        else
-                            OptimizePath(head, updatedDirectDistanceToApple, moves, true);
+                        if (directDistanceToApple != updatedDirectDistanceToApple && OptimizePath(head, updatedDirectDistanceToApple, tick))
+                            break;
 
                         movesSinceLastStep = 0;
                         directDistanceToApple = updatedDirectDistanceToApple;
                     }
-                    else
-                        OptimizePath(head, directDistanceToApple, moves, true);
 
 
                     MoveList.AddLast(head.NextDirection);
 
                     head = head.Next;
-                    moves++;
+                    tick++;
                     movesSinceLastStep++;
                     directDistanceToApple--;
                 }
-
-                head.SetDistance(Apple, moves); // For printing
             }
 
-            void OptimizePath(Cell head, int directDistanceToApple, int moves, bool onlyBoxCut)
+            // Returns if there is any further room for improvement
+            bool OptimizePath(Cell head, int directDistanceToApple, int callTick)
             {
                 head.SetDistance(null);
 
+                restart:
+
                 Cell current = head;
 
-                while (current.CycleDistance <= Apple.CycleDistance && Apple.CycleDistance > directDistanceToApple)
+                while (Apple.CycleDistance - current.CycleDistance > current.DistanceTo(Apple))
                 {
-                    restart:
-
-                    if (!onlyBoxCut && current.CycleDistance <= Apple.CycleDistance - 3)
+                    foreach (Cell neighbor in current.Neighbors!)
                     {
-                        foreach (Cell neighbor in current.Neighbors!)
-                        {
-                            if (neighbor.CycleDistance > current.CycleDistance
-                                && neighbor != current.Next
-                                && neighbor.CycleDistance <= Apple.CycleDistance)
+                        Direction direction = current.DirectionTowards(neighbor);
 
+                        if (direction != current.NextDirection && direction != current.PreviousDirection)
+                        {
+                            int distance = 1;
+                            Cell? test = neighbor;
+
+                            while (test != null && !test.Occupied(callTick))
                             {
-                                (bool succeeded, _, _) = TrySplice(current, current.DirectionTowards(neighbor), directDistanceToApple);
-
-                                if (succeeded)
+                                if (test.CycleDistance <= Apple.CycleDistance)
                                 {
-                                    head.SetDistance(null);
+                                    if (test.CycleDistance > current.CycleDistance)
+                                    {
+                                        if (TryBoxCut(head, current, direction, distance, directDistanceToApple)) // On seperate line for breakpoint
+                                        {
+                                            if (Apple.CycleDistance == directDistanceToApple)
+                                                return true;
 
-                                    // It seems restarting is the best way to guarantee the whole path gets streched out fully
+                                            goto restart;
+                                        }
+                                    }
 
-                                    current = head;
-
-                                    goto restart;
+                                    break;
                                 }
+
+                                test = test.Move(direction);
+                                distance++;
                             }
-                        }
-                    }
-
-                    if (head != current && (head.X == current.X || head.Y == current.Y) && head.DistanceTo(current) > 1)
-                    {
-                        if (TryBoxCut(head, current, moves, directDistanceToApple))
-                        {
-                            current = head;
-
-                            goto restart;
                         }
                     }
 
                     current = current.Next;
                 }
+
+                return false;
             }
 
-            bool TryBoxCut(Cell head, Cell target, int moves, int directDistanceToApple)
+            bool TryBoxCut(Cell head, Cell origin, Direction direction, int distance, int directDistanceToApple)
             {
-                Direction direction = head.DirectionTowards(target);
-
-                if (head.NextDirection == direction || target.NextDirection == ReverseDirection(direction))
-                    return false;
-
-                int tick = Tick + moves;
-                int splicedLength = 0;
-
-                Cell current = head;
-
-                while (true)
-                {
-                    current = current.Move(direction)!;
-                    splicedLength++;
-
-                    if (current == target)
-                        break;
-
-                    if (current.Occupied(tick + splicedLength - 1) || current.CycleDistance <= Apple.CycleDistance)
-                        return false;
-                }
-
-                current = head;
-                splicedLength = 0;
-
                 LinkedList<Splice> splices = new();
+                Cell current = origin;
 
                 do
                 {
                     if (current.NextDirection != direction)
                     {
-                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(current, direction, directDistanceToApple - splicedLength);
+                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(current, direction, directDistanceToApple);
 
                         if (succeeded)
                         {
@@ -203,19 +174,22 @@ namespace AutoSnake3
                         }
                         else
                         {
-                            foreach (var splice in splices)
-                                splice.Reset();
+                            if (splices.Count > 0)
+                            {
+                                foreach (var splice in splices)
+                                    splice.Reset();
 
-                            head.SetDistance(null);
+                                head.SetDistance(null);
+                            }
 
                             return false;
                         }
                     }
 
-                    current = current.Move(direction)!;
-                    splicedLength++;
+                    current = current.Next;
+                    distance--;
                 }
-                while (current != target);
+                while (distance > 0);
 
                 return true;
             }
