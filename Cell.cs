@@ -113,7 +113,7 @@ namespace AutoSnake3
                 }
                 while (current != stop);
 
-                return startCount - count;
+                return count - startCount;
             }
 
             internal void SetSeperated(bool value)
