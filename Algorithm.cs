@@ -111,49 +111,54 @@ namespace AutoSnake3
             {
                 head.SetDistance(Apple);
 
-                restart:
+                bool runAgain;
 
-                Cell current = head;
-
-                while (Apple.CycleDistance - current.CycleDistance > current.DistanceTo(Apple))
+                do
                 {
-                    foreach (Cell neighbor in current.Neighbors!)
+                    Cell current = head;
+                    runAgain = false;
+
+                    while (Apple.CycleDistance - current.CycleDistance > current.DistanceTo(Apple))
                     {
-                        Direction direction = current.DirectionTowards(neighbor);
-
-                        if (direction != current.NextDirection && direction != current.PreviousDirection)
+                        foreach (Cell neighbor in current.Neighbors!)
                         {
-                            int distance = 1;
-                            Cell? test = neighbor;
+                            Direction direction = current.DirectionTowards(neighbor);
 
-                            while (test != null && !test.Occupied(callTick))
+                            if (direction != current.NextDirection && direction != current.PreviousDirection)
                             {
-                                if (test.CycleDistance <= Apple.CycleDistance)
-                                {
-                                    if (test.CycleDistance > current.CycleDistance)
-                                    {
-                                        if (TryBoxCut(head, current, direction, test, distance, directDistanceToApple)) // On seperate line for breakpoint
-                                        {
-                                            if (Apple.CycleDistance == directDistanceToApple)
-                                                return true;
+                                int distance = 1;
+                                Cell? test = neighbor;
 
-                                            goto restart;
+                                while (test != null && !test.Occupied(callTick))
+                                {
+                                    if (test.CycleDistance <= Apple.CycleDistance)
+                                    {
+                                        if (test.CycleDistance > current.CycleDistance)
+                                        {
+                                            if (TryBoxCut(head, current, direction, test, distance, directDistanceToApple)) // On seperate line for breakpoint
+                                            {
+                                                if (Apple.CycleDistance == directDistanceToApple)
+                                                    return true;
+
+                                                runAgain = true;
+                                            }
                                         }
+
+                                        break;
                                     }
 
-                                    break;
+                                    test = test.Move(direction);
+                                    distance++;
                                 }
-
-                                test = test.Move(direction);
-                                distance++;
                             }
                         }
+
+                        current = current.Next;
                     }
-
-                    current = current.Next;
                 }
+                while (runAgain);
 
-                return false;
+                return Apple.CycleDistance == directDistanceToApple;
             }
 
             bool TryBoxCut(Cell head, Cell origin, Direction direction, Cell target, int distance, int directDistanceToApple)
