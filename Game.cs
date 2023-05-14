@@ -219,7 +219,7 @@ namespace AutoSnake3
 
             public void Print(bool snake = true, bool cycle = false) => DebugPrint(snake: snake, cycle: cycle);
 
-            internal void DebugPrint(bool snake = true, bool cycle = false, bool step = false, bool cycleDistance = false, int tick = -1)
+            internal void DebugPrint(bool snake = true, bool cycle = false, bool step = false, bool cycleDistance = false, bool seperated = false, int tick = -1)
             {
                 int actualTick = tick == -1 ? Tick : tick;
 
@@ -316,6 +316,12 @@ namespace AutoSnake3
                             Console.ForegroundColor = ConsoleColor.White;
 
                             Console.Write((Matrix[x, y].CycleDistance.ToString() + "  ")[..2]);
+                        }
+
+                        else if (seperated && Matrix[x, y].Seperated)
+                        {
+                            Console.BackgroundColor = ConsoleColor.White;
+                            Console.Write("  ");
                         }
 
                         else
