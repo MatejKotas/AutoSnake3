@@ -94,7 +94,6 @@ namespace AutoSnake3
                         directDistanceToApple = updatedDirectDistanceToApple;
                     }
 
-
                     MoveList.AddLast(head.NextDirection);
 
                     head = head.Next;
@@ -102,12 +101,15 @@ namespace AutoSnake3
                     movesSinceLastStep++;
                     directDistanceToApple--;
                 }
+
+                if (head != Head)
+                    Head.SetDistance(Apple); // For printing
             }
 
             // Returns if there is any further room for improvement
             bool OptimizePath(Cell head, int directDistanceToApple, int callTick)
             {
-                head.SetDistance(null);
+                head.SetDistance(Apple);
 
                 restart:
 
@@ -130,7 +132,7 @@ namespace AutoSnake3
                                 {
                                     if (test.CycleDistance > current.CycleDistance)
                                     {
-                                        if (TryBoxCut(head, current, direction, distance, directDistanceToApple)) // On seperate line for breakpoint
+                                        if (TryBoxCut(head, current, direction, test, distance, directDistanceToApple)) // On seperate line for breakpoint
                                         {
                                             if (Apple.CycleDistance == directDistanceToApple)
                                                 return true;
@@ -154,49 +156,52 @@ namespace AutoSnake3
                 return false;
             }
 
-            bool TryBoxCut(Cell head, Cell origin, Direction direction, int distance, int directDistanceToApple)
+            bool TryBoxCut(Cell head, Cell origin, Direction direction, Cell target, int distance, int directDistanceToApple)
             {
+                head.SetDistance(origin);
+                int apparentArea = target.SetDistance(head.Previous, false, origin.CycleDistance + distance);
+
                 LinkedList<Splice> splices = new();
-                Cell current = origin;
+
+                int cycleDistance = origin.CycleDistance;
 
                 do
                 {
-                    if (current.NextDirection != direction)
+                    if (origin.NextDirection != direction)
                     {
-                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(current, direction, directDistanceToApple);
+                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(origin, direction, directDistanceToApple, apparentArea, target.CycleDistance);
 
                         if (succeeded)
                         {
                             splices.AddFirst(main);
                             splices.AddFirst((Splice)(secondary!));
-
-                            head.SetDistance(null);
                         }
                         else
                         {
-                            if (splices.Count > 0)
-                            {
-                                foreach (var splice in splices)
-                                    splice.Reset();
+                            foreach (var splice in splices)
+                                splice.Reset();
 
-                                head.SetDistance(null);
-                            }
+                            head.SetDistance(Apple);
 
                             return false;
                         }
                     }
 
-                    current = current.Next;
+                    origin = origin.Next;
+                    origin.CycleDistanceIndex = CycleDistanceIndexCounter;
+                    origin.CycleDistance = ++cycleDistance;
+
                     distance--;
                 }
                 while (distance > 0);
 
+                head.SetDistance(Apple);
                 return true;
             }
 
             // Connects second.Previous to first.Next, first to second, and splices the two resulting cycles somewhere else
             // If splice fails, returns splice with null origin
-            (bool succeeded, Splice main, Splice? secondary) TrySplice(Cell first, Direction direction, int directDistanceToApple)
+            (bool succeeded, Splice main, Splice? secondary) TrySplice(Cell first, Direction direction, int directDistanceToApple, int apparentArea, int dontSpliceFrom)
             {
                 Cell second = first.Move(direction)!;
                 Cell cycle = second.Previous;
@@ -212,16 +217,21 @@ namespace AutoSnake3
 
                 do
                 {
-                    foreach (Cell neighbor in current.Neighbors!)
+                    if (current.CycleDistance < dontSpliceFrom || current.CycleDistance >= Apple.CycleDistance)
                     {
-                        if (!neighbor.Seperated
-                            && neighbor.CycleDistance > Apple.CycleDistance
-                            && neighbor.Previous.DistanceTo(current.Next) == 1
-                            && Area - Length + directDistanceToApple > neighbor.CycleDistance)
+                        foreach (Cell neighbor in current.Neighbors!)
                         {
-                            Splice secondary = new(current, current.DirectionTowards(neighbor));
+                            if (!neighbor.Seperated
+                                && neighbor.CycleDistance > Apple.CycleDistance
+                                && neighbor.Previous.DistanceTo(current.Next) == 1
+                                && apparentArea - Length + directDistanceToApple > neighbor.CycleDistance)
+                            {
+                                cycle.SetSeperated(false);
 
-                            return (true, main, secondary);
+                                Splice secondary = new(current, current.DirectionTowards(neighbor));
+
+                                return (true, main, secondary);
+                            }
                         }
                     }
 
