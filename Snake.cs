@@ -85,11 +85,11 @@
                     {
                         while (game.Head.OccupiedNeighbors() == 3)
                         {
-                            foreach (Cell neighbor in game.Head.Neighbors!)
+                            foreach (Cell.Neighbor neighbor in game.Head.Neighbors!)
                             {
-                                if (!neighbor.Occupied())
+                                if (!neighbor.Cell.Occupied())
                                 {
-                                    game.MakeMove(game.Head.DirectionTowards(neighbor));
+                                    game.MakeMove(neighbor.Direction);
                                     break;
                                 }
                             }

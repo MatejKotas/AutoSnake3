@@ -6,6 +6,18 @@ namespace AutoSnake3
     {
         public class Cell : IEnumerable // Enumerates the cells in the order of the hamiltonian cycle we are following
         {
+            public class Neighbor
+            {
+                public readonly Direction Direction;
+                public readonly Cell Cell;
+
+                public Neighbor(Direction direction, Cell cell)
+                {
+                    Direction = direction;
+                    Cell = cell;
+                }
+            }
+
             internal readonly Game parent;
 
             internal int SnakeTick = -1;
@@ -19,7 +31,7 @@ namespace AutoSnake3
             public Cell? Down { get; internal set; }
             public Cell? Left { get; internal set; }
 
-            internal Cell[]? Neighbors; // Only set in automatic mode
+            internal Neighbor[]? Neighbors;
 
             #region Next
 
@@ -180,23 +192,6 @@ namespace AutoSnake3
                     Direction.Left => Left,
                     _ => throw new InvalidOperationException()
                 };
-            }
-
-            internal Direction DirectionTowards(Cell target)
-            {
-                if (target.Y > Y)
-                    return Direction.Up;
-
-                else if (target.X > X)
-                    return Direction.Right;
-
-                else if (target.Y < Y)
-                    return Direction.Down;
-
-                else if (target.X < X)
-                    return Direction.Left;
-
-                return Direction.None;
             }
 
             public int DistanceTo(Cell other) => Abs(X - other.X) + Abs(Y - other.Y);

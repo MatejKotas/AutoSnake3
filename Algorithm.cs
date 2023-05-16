@@ -120,36 +120,34 @@ namespace AutoSnake3
 
                     while (Apple.CycleDistance - current.CycleDistance > current.DistanceTo(Apple))
                     {
-                        foreach (Cell neighbor in current.Neighbors!)
+                        foreach (Cell.Neighbor neighbor in current.Neighbors!)
                         {
-                            Direction direction = current.DirectionTowards(neighbor);
+                            if (neighbor.Direction == current.NextDirection || neighbor.Direction == current.PreviousDirection)
+                                continue;
 
-                            if (direction != current.NextDirection && direction != current.PreviousDirection)
+                            int distance = 1;
+                            Cell? test = neighbor.Cell;
+
+                            while (test != null && !test.Occupied(callTick))
                             {
-                                int distance = 1;
-                                Cell? test = neighbor;
-
-                                while (test != null && !test.Occupied(callTick))
+                                if (test.CycleDistance <= Apple.CycleDistance)
                                 {
-                                    if (test.CycleDistance <= Apple.CycleDistance)
+                                    if (test.CycleDistance > current.CycleDistance)
                                     {
-                                        if (test.CycleDistance > current.CycleDistance)
+                                        if (TryBoxCut(head, current, neighbor.Direction, test, distance, directDistanceToApple)) // On seperate line for breakpoint
                                         {
-                                            if (TryBoxCut(head, current, direction, test, distance, directDistanceToApple)) // On seperate line for breakpoint
-                                            {
-                                                if (Apple.CycleDistance == directDistanceToApple)
-                                                    return true;
+                                            if (Apple.CycleDistance == directDistanceToApple)
+                                                return true;
 
-                                                runAgain = true;
-                                            }
+                                            runAgain = true;
                                         }
-
-                                        break;
                                     }
 
-                                    test = test.Move(direction);
-                                    distance++;
+                                    break;
                                 }
+
+                                test = test.Move(neighbor.Direction);
+                                distance++;
                             }
                         }
 
@@ -224,16 +222,16 @@ namespace AutoSnake3
                 {
                     if (current.CycleDistance < dontSpliceFrom || current.CycleDistance >= Apple.CycleDistance)
                     {
-                        foreach (Cell neighbor in current.Neighbors!)
+                        foreach (Cell.Neighbor neighbor in current.Neighbors!)
                         {
-                            if (!neighbor.Seperated
-                                && neighbor.CycleDistance > Apple.CycleDistance
-                                && neighbor.Previous.DistanceTo(current.Next) == 1
-                                && apparentArea - Length + directDistanceToApple > neighbor.CycleDistance)
+                            if (!neighbor.Cell.Seperated
+                                && neighbor.Cell.CycleDistance > Apple.CycleDistance
+                                && neighbor.Cell.Previous.DistanceTo(current.Next) == 1
+                                && apparentArea - Length + directDistanceToApple > neighbor.Cell.CycleDistance)
                             {
                                 cycle.SetSeperated(false);
 
-                                Splice secondary = new(current, current.DirectionTowards(neighbor));
+                                Splice secondary = new(current, neighbor.Direction);
 
                                 return (true, main, secondary);
                             }
@@ -267,8 +265,10 @@ namespace AutoSnake3
                     Cell current = pending.First!.Value;
                     pending.RemoveFirst();
 
-                    foreach (Cell neighbor in current.Neighbors!)
+                    foreach (Cell.Neighbor n in current.Neighbors!)
                     {
+                        Cell neighbor = n.Cell;
+
                         if (!neighbor.Occupied(tick + current.Step))
                         {
                             if (neighbor.StepIndex != StepIndexCounter)

@@ -71,19 +71,19 @@ namespace AutoSnake3
 
                 foreach (Cell c in Matrix)
                 {
-                    List<Cell> neighbors = new();
+                    List<Cell.Neighbor> neighbors = new();
 
                     if (c.Up != null)
-                        neighbors.Add(c.Up);
+                        neighbors.Add(new(Direction.Up, c.Up));
 
                     if (c.Right != null)
-                        neighbors.Add(c.Right);
+                        neighbors.Add(new(Direction.Right, c.Right));
 
                     if (c.Down != null)
-                        neighbors.Add(c.Down);
+                        neighbors.Add(new(Direction.Down, c.Down));
 
                     if (c.Left != null)
-                        neighbors.Add(c.Left);
+                        neighbors.Add(new(Direction.Left, c.Left));
 
                     c.Neighbors = neighbors.ToArray();
                 }
