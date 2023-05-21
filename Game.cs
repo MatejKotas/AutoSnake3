@@ -364,9 +364,8 @@ namespace AutoSnake3
             Left,
         }
 
-        public static Direction ReverseDirection(Direction d)
-        {
-            return d switch
+        public static Direction ReverseDirection(Direction d) =>
+            d switch
             {
                 Direction.Up => Direction.Down,
                 Direction.Right => Direction.Left,
@@ -374,6 +373,5 @@ namespace AutoSnake3
                 Direction.Left => Direction.Right,
                 _ => throw new InvalidOperationException()
             };
-        }
     }
 }
