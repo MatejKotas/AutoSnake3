@@ -271,22 +271,34 @@ namespace AutoSnake3
 
                         if (!neighbor.Occupied(tick + current.Step))
                         {
+                            int step = current.Step + 1;
+
                             if (neighbor.StepIndex != StepIndexCounter)
                             {
+                                neighbor.StepIndex = StepIndexCounter;
+
                                 if (neighbor == Apple)
                                 {
                                     // Make only shortest path(s) have step value
 
-                                    ShortestPathTrace(current, current.Step, start);
+                                    neighbor.StepSourcesIndex = 0;
+
+                                    foreach (Cell.Neighbor appleN in neighbor.Neighbors!)
+                                    {
+                                        Cell appleNeighbor = appleN.Cell;
+
+                                        if (appleNeighbor.Step == current.Step)
+                                            neighbor.StepSources[neighbor.StepSourcesIndex++] = appleNeighbor;
+                                    }
+
+                                    ShortestPathTrace(neighbor, start);
 
                                     StepIndexCounter++;
-                                    current.StepIndex = StepIndexCounter;
 
-                                    return current.Step + 1;
+                                    return step;
                                 }
 
-                                neighbor.StepIndex = StepIndexCounter;
-                                neighbor.Step = current.Step + 1;
+                                neighbor.Step = step;
                                 neighbor.StepSources[0] = current;
                                 neighbor.StepSourcesIndex = 1;
 
@@ -309,7 +321,7 @@ namespace AutoSnake3
 
                                 next:;
                             }
-                            else if (neighbor.Step == current.Step + 1)
+                            else if (neighbor.Step == step)
                                 neighbor.StepSources[neighbor.StepSourcesIndex++] = current;
                         }
                     }
@@ -318,7 +330,7 @@ namespace AutoSnake3
                 throw new Exception("No path to apple found");
             }
 
-            void ShortestPathTrace(Cell current, int step, Cell start)
+            void ShortestPathTrace(Cell current, Cell start)
             {
                 for (int i = 0; i < current.StepSourcesIndex; i++)
                 {
@@ -329,7 +341,7 @@ namespace AutoSnake3
                         source.StepIndex++;
 
                         if (source != start)
-                            ShortestPathTrace(source, step - 1, start);
+                            ShortestPathTrace(source, start);
                     }
                 }
             }
