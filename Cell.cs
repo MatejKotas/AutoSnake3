@@ -128,7 +128,7 @@ namespace AutoSnake3
             }
 
             // Also sets seperated to false
-            internal int SetDistance(Cell? stop, bool newIndex = true, int startCount = 0) // Returns ending count
+            internal int SetDistance(Cell? stop, bool newIndex = true, int startCount = 0) // Returns ending count + 1
             {
                 if (newIndex)
                 {
