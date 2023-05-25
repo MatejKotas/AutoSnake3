@@ -52,15 +52,41 @@ namespace AutoSnake3
 
             #region CycleDistance
 
-            int cycleDistance;
+            int cycleDistance1;
+            int cycleDistance2;
+
+            int cycleDistanceIndex1 = -1;
+            int cycleDistanceIndex2 = -1;
 
             internal int CycleDistance
             {
-                get => CycleDistanceIndex == parent.CycleDistanceIndexCounter ? cycleDistance : int.MaxValue;
-                set => cycleDistance = value;
-            }
+                get
+                {
+                    if (cycleDistanceIndex1 == parent.CycleDistanceIndexCounter)
+                        return cycleDistance1;
 
-            internal int CycleDistanceIndex = -1;
+                    else if (cycleDistanceIndex2 == parent.CycleDistanceIndexCounter)
+                        return cycleDistance2;
+
+                    else
+                        return int.MaxValue;
+                }
+
+                set
+                {
+                    if (parent.CycleDistanceIndexCounter % 2 == 0)
+                    {
+                        cycleDistanceIndex1 = parent.CycleDistanceIndexCounter;
+                        cycleDistance1 = value;
+                    }
+
+                    else
+                    {
+                        cycleDistanceIndex2 = parent.CycleDistanceIndexCounter;
+                        cycleDistance2 = value;
+                    }
+                }
+            }
 
             #endregion
 
@@ -86,7 +112,7 @@ namespace AutoSnake3
             internal int StepLoss { get; private set; }
 
             internal List<Neighbor> StepSources = new(4); // All items are elements of Neighbors
-            
+
             #endregion
 
             internal int FutureSnakeTick = -1;
@@ -102,7 +128,14 @@ namespace AutoSnake3
             internal int SetDistance(Cell? stop, bool newIndex = true, int startCount = 0) // Returns ending count
             {
                 if (newIndex)
-                    parent.CycleDistanceIndexCounter++;
+                {
+                    if (!parent.Reverted)
+                        parent.RevertOffset = 1;
+                    else
+                        parent.Reverted = false;
+
+                    parent.CycleDistanceIndexCounter += parent.RevertOffset;
+                }
 
                 Cell current = this;
 
@@ -113,8 +146,7 @@ namespace AutoSnake3
 
                 do
                 {
-                    current.cycleDistance = startCount++;
-                    current.CycleDistanceIndex = parent.CycleDistanceIndexCounter;
+                    current.CycleDistance = startCount++;
                     current.Seperated = false;
 
                     current = current.Next;
@@ -122,6 +154,13 @@ namespace AutoSnake3
                 while (current != stop);
 
                 return startCount;
+            }
+
+            internal void DiscardLastCycleDistance()
+            {
+                parent.CycleDistanceIndexCounter -= parent.RevertOffset;
+                parent.Reverted = true;
+                parent.RevertOffset += 2;
             }
 
             internal void SetSeperated(bool value)

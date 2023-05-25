@@ -5,6 +5,8 @@ namespace AutoSnake3
         public partial class Game
         {
             internal int CycleDistanceIndexCounter = 0;
+            internal int RevertOffset = 1;
+            internal bool Reverted = false;
 
             void InitilizeAlgorithm()
             {
@@ -83,10 +85,10 @@ namespace AutoSnake3
                     }
                 }
 
+                Head.SetDistance(Apple);
+                
                 if (moveEnd)
                 {
-                    Head.SetDistance(null);
-
                     foreach (Cell.Neighbor source in Apple.StepSources)
                     {
                         if (source.Direction != Apple.NextDirection)
@@ -94,7 +96,10 @@ namespace AutoSnake3
                             (bool succeeded, _, _) = TrySplice(source.Cell, ReverseDirection(source.Direction), directDistanceToApple, Tick, Area, 0);
 
                             if (succeeded)
+                            {
+                                Head.SetDistance(Apple);
                                 break;
+                            }
                         }
                     }
                 }
@@ -118,6 +123,8 @@ namespace AutoSnake3
                     {
                         int updatedDirectDistanceToApple = ShortestPathLength(head, tick);
 
+                        head.SetDistance(Apple);
+
                         if (directDistanceToApple != updatedDirectDistanceToApple && OptimizePath(head, updatedDirectDistanceToApple, tick))
                             break;
 
@@ -134,14 +141,12 @@ namespace AutoSnake3
                 }
 
                 if (head != Head)
-                    Head.SetDistance(Apple); // For printing
+                    head.SetDistance(Apple, startCount: tick - Tick); // For printing
             }
 
             // Returns if there is any further room for improvement
             bool OptimizePath(Cell head, int directDistanceToApple, int callTick)
             {
-                head.SetDistance(Apple);
-
                 bool runAgain;
 
                 do
@@ -215,14 +220,13 @@ namespace AutoSnake3
                             foreach (var splice in splices)
                                 splice.Reset();
 
-                            head.SetDistance(Apple);
+                            head.DiscardLastCycleDistance();
 
                             return false;
                         }
                     }
 
                     origin = origin.Next;
-                    origin.CycleDistanceIndex = CycleDistanceIndexCounter;
                     origin.CycleDistance = ++cycleDistance;
 
                     distance--;
