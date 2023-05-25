@@ -85,7 +85,7 @@
                     {
                         while (game.Head.OccupiedNeighbors() == 3)
                         {
-                            foreach (Cell.Neighbor neighbor in game.Head.Neighbors!)
+                            foreach (Cell.Neighbor neighbor in game.Head.Neighbors)
                             {
                                 if (!neighbor.Cell.Occupied())
                                 {
@@ -108,7 +108,7 @@
 
             Game? a = null;
 
-            int seed = 0;
+            int seed = 13;
             bool newApple = false;
 
             while (true)
@@ -116,15 +116,30 @@
                 if (a == null || a.gameOver)
                     a = new(12, 12, true, seed++);
 
-                Direction lastMove = a.NextMove;
+                Direction lastMove;
 
-                (_, newApple) = a.MakeMove();
+                if (a.DirectDistance == a.AlgorithmDistance)
+                {
+                    do
+                    {
+                        lastMove = a.NextMove;
+                        (_, newApple) = a.MakeMove();
+                    }
+                    while (!newApple);
+                }
 
-                if (newApple || lastMove != a.NextMove)
+                else
                 {
                     a.Print(true, true);
 
                     Console.ReadLine();
+
+                    do
+                    {
+                        lastMove = a.NextMove;
+                        (_, newApple) = a.MakeMove();
+                    }
+                    while (lastMove == a.NextMove && !newApple);
                 }
             }
         }

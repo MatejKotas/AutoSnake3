@@ -26,8 +26,8 @@ namespace AutoSnake3
             public readonly int X;
             public readonly int Y;
 
-            internal Neighbor[]? Neighbors; // Elements guaranteed to be not null. Length varies.
-            internal Neighbor[]? Directions { private get; set; } // Elements can be null. Use Direction as index. Length: 4
+            internal Neighbor[] Neighbors; // Elements guaranteed to be not null. Length varies.
+            internal Neighbor[] Directions { private get; set; } // Elements can be null. Use Direction as index. Length: 4
 
             #region Next
 
@@ -190,7 +190,7 @@ namespace AutoSnake3
             {
                 int result = 4;
 
-                foreach (Neighbor n in Neighbors!)
+                foreach (Neighbor n in Neighbors)
                     if (!n.Cell.Occupied())
                         result--;
 
@@ -219,7 +219,7 @@ namespace AutoSnake3
                 while (cell != this);
             }
 
-            public Neighbor? NeighborAt(Direction direction) => Directions![(int)direction];
+            public Neighbor? NeighborAt(Direction direction) => Directions[(int)direction];
 
             public Cell? Move(Direction direction) => NeighborAt(direction)?.Cell;
 

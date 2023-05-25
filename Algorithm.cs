@@ -72,7 +72,7 @@ namespace AutoSnake3
 
             void CalculatePath()
             {
-                int directDistanceToApple = ShortestPathLength(Head, Tick);
+                DirectDistance = ShortestPathLength(Head, Tick);
 
                 bool moveEnd = true;
 
@@ -93,7 +93,7 @@ namespace AutoSnake3
                     {
                         if (source.Direction != Apple.NextDirection)
                         {
-                            (bool succeeded, _, _) = TrySplice(source.Cell, ReverseDirection(source.Direction), directDistanceToApple, Tick, Area, 0);
+                            (bool succeeded, _, _) = TrySplice(source.Cell, ReverseDirection(source.Direction), DirectDistance, Tick, Area, 0);
 
                             if (succeeded)
                             {
@@ -104,8 +104,11 @@ namespace AutoSnake3
                     }
                 }
 
-                if (OptimizePath(Head, directDistanceToApple, Tick))
+                if (OptimizePath(Head, DirectDistance, Tick))
+                {
+                    AlgorithmDistance = Apple.CycleDistance;
                     return;
+                }
 
                 MoveList.AddLast(Head.NextDirection);
 
@@ -113,7 +116,7 @@ namespace AutoSnake3
 
                 int tick = Tick + 1;
                 int movesSinceLastStep = 1;
-                directDistanceToApple--;
+                int directDistanceToApple = DirectDistance - 1;
 
                 while (head != Apple && head.Next != Apple && head.Next.Next != Apple)
                 {
@@ -141,7 +144,7 @@ namespace AutoSnake3
                 }
 
                 if (head != Head)
-                    head.SetDistance(Apple, startCount: tick - Tick); // For printing
+                    AlgorithmDistance = head.SetDistance(Apple, startCount: tick - Tick) - 1; // For printing
             }
 
             // Returns if there is any further room for improvement
@@ -156,7 +159,7 @@ namespace AutoSnake3
 
                     while (Apple.CycleDistance - current.CycleDistance > current.DistanceTo(Apple))
                     {
-                        foreach (Cell.Neighbor neighbor in current.Neighbors!)
+                        foreach (Cell.Neighbor neighbor in current.Neighbors)
                         {
                             if (neighbor.Direction == current.NextDirection || neighbor.Direction == current.PreviousDirection)
                                 continue;
@@ -258,7 +261,7 @@ namespace AutoSnake3
                         (current.CycleDistance < dontSpliceFrom || current.CycleDistance >= Apple.CycleDistance)
                         && (!current.Occupied(tick + directDistanceToApple)))
                     {
-                        foreach (Cell.Neighbor neighbor in current.Neighbors!)
+                        foreach (Cell.Neighbor neighbor in current.Neighbors)
                         {
                             if (!neighbor.Cell.Seperated
                                 && neighbor.Cell.CycleDistance > Apple.CycleDistance
@@ -301,7 +304,7 @@ namespace AutoSnake3
                     Cell current = pending.First!.Value;
                     pending.RemoveFirst();
 
-                    foreach (Cell.Neighbor n in current.Neighbors!)
+                    foreach (Cell.Neighbor n in current.Neighbors)
                     {
                         Cell neighbor = n.Cell;
 
@@ -319,7 +322,7 @@ namespace AutoSnake3
 
                                     neighbor.StepSources.Clear();
 
-                                    foreach (Cell.Neighbor appleN in neighbor.Neighbors!)
+                                    foreach (Cell.Neighbor appleN in neighbor.Neighbors)
                                         if (appleN.Cell.Step == current.Step)
                                             neighbor.StepSources.Add(appleN);
 

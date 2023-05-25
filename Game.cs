@@ -18,6 +18,14 @@ namespace AutoSnake3
                 get => Tick + Length - StartingLength;
             }
 
+            public int MovesSinceApple
+            {
+                get => Tick - TickAtLastApple;
+            }
+
+            public int DirectDistance { get; private set; }
+            public int AlgorithmDistance { get; private set; }
+
             public int Length = StartingLength;
             public const int StartingLength = 2;
 
