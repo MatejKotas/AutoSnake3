@@ -71,8 +71,15 @@ namespace AutoSnake3
 
                     Game game = new(SizeX, SizeY, true, seed);
 
-                    while (!game.gameOver)
-                        game.MakeMove();
+                    try
+                    {
+                        while (!game.gameOver)
+                            game.MakeMove();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
 
                     if (game.Apple != null)
                     {
