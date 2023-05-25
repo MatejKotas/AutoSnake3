@@ -27,7 +27,7 @@ namespace AutoSnake3
             public readonly int Y;
 
             internal Neighbor[]? Neighbors; // Elements guaranteed to be not null. Length varies.
-            internal Cell[]? Directions; // Elements can be null. Use Direction as index. Length: 4
+            internal Neighbor[]? Directions; // Elements can be null. Use Direction as index. Length: 4
 
             #region Next
 
@@ -173,7 +173,7 @@ namespace AutoSnake3
                 while (cell != this);
             }
 
-            public Cell? Move(Direction direction) => Directions![(int)direction];
+            public Cell? Move(Direction direction) => Directions![(int)direction]?.Cell;
 
             public int DistanceTo(Cell other) => Abs(X - other.X) + Abs(Y - other.Y);
 

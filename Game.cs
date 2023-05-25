@@ -56,30 +56,38 @@ namespace AutoSnake3
                     for (int y = 0; y < SizeY; y++)
                     {
                         List<Cell.Neighbor> neighbors = new();
-                        Cell[] directions = new Cell[4];
+                        Cell.Neighbor[] directions = new Cell.Neighbor[4];
 
                         if (y != sizeY - 1)
                         {
-                            neighbors.Add(new(Direction.Up, Matrix[x, y + 1]));
-                            directions[(int)Direction.Up] = Matrix[x, y + 1];
+                            Cell.Neighbor n = new(Direction.Up, Matrix[x, y + 1]);
+
+                            neighbors.Add(n);
+                            directions[(int)Direction.Up] = n;
                         }
 
                         if (x != sizeX - 1)
                         {
-                            neighbors.Add(new(Direction.Right, Matrix[x + 1, y]));
-                            directions[(int)Direction.Right] = Matrix[x + 1, y];
+                            Cell.Neighbor n = new(Direction.Right, Matrix[x + 1, y]);
+
+                            neighbors.Add(n);
+                            directions[(int)Direction.Right] = n;
                         }
 
                         if (y != 0)
                         {
-                            neighbors.Add(new(Direction.Down, Matrix[x, y - 1]));
-                            directions[(int)Direction.Down] = Matrix[x, y - 1];
+                            Cell.Neighbor n = new(Direction.Down, Matrix[x, y - 1]);
+
+                            neighbors.Add(n);
+                            directions[(int)Direction.Down] = n;
                         }
 
                         if (x != 0)
                         {
-                            neighbors.Add(new(Direction.Left, Matrix[x - 1, y]));
-                            directions[(int)Direction.Left] = Matrix[x - 1, y];
+                            Cell.Neighbor n = new(Direction.Left, Matrix[x - 1, y]);
+
+                            neighbors.Add(n);
+                            directions[(int)Direction.Left] = n;
                         }
 
                         Matrix[x, y].Neighbors = neighbors.ToArray();
