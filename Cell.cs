@@ -4,7 +4,7 @@ namespace AutoSnake3
 {
     public static partial class Snake
     {
-        public class Cell : IEnumerable // Enumerates the cells in the order of the hamiltonian cycle we are following
+        public class Cell
         {
             public class Neighbor
             {
@@ -218,44 +218,6 @@ namespace AutoSnake3
             public int DistanceTo(Cell other) => Abs(X - other.X) + Abs(Y - other.Y);
 
             static int Abs(int value) => value >= 0 ? value : -value;
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-            IEnumerator GetEnumerator() => new Enumerator(this);
-
-            class Enumerator : IEnumerator
-            {
-                readonly Cell start;
-                Cell current;
-
-                bool first = true;
-
-                public Enumerator(Cell start)
-                {
-                    this.start = start;
-                    current = start;
-                }
-
-                public object Current { get => current; }
-
-                public bool MoveNext()
-                {
-                    if (!first)
-                    {
-                        current = current.Next;
-                        return current != start;
-                    }
-
-                    first = false;
-                    return true;
-                }
-
-                public void Reset()
-                {
-                    current = start;
-                    first = false;
-                }
-            }
         }
     }
 }
