@@ -281,11 +281,11 @@ namespace AutoSnake3
                                 {
                                     // Make only shortest path(s) have step value
 
-                                    neighbor.StepSourcesIndex = 0;
+                                    neighbor.StepSources.Clear();
 
                                     foreach (Cell.Neighbor appleN in neighbor.Neighbors!)
                                         if (appleN.Cell.Step == current.Step)
-                                            neighbor.StepSources[neighbor.StepSourcesIndex++] = appleN;
+                                            neighbor.StepSources.Add(appleN);
 
                                     ShortestPathTrace(neighbor, start);
 
@@ -295,8 +295,8 @@ namespace AutoSnake3
                                 }
 
                                 neighbor.Step = step;
-                                neighbor.StepSources[0] = neighbor.NeighborAt(ReverseDirection(n.Direction))!;
-                                neighbor.StepSourcesIndex = 1;
+                                neighbor.StepSources.Clear();
+                                neighbor.StepSources.Add(neighbor.NeighborAt(ReverseDirection(n.Direction))!);
 
                                 // Add to pending at correct position
 
@@ -318,7 +318,7 @@ namespace AutoSnake3
                                 next:;
                             }
                             else if (neighbor.Step == step)
-                                neighbor.StepSources[neighbor.StepSourcesIndex++] = neighbor.NeighborAt(ReverseDirection(n.Direction))!;
+                                neighbor.StepSources.Add(neighbor.NeighborAt(ReverseDirection(n.Direction))!);
                         }
                     }
                 }
@@ -328,9 +328,9 @@ namespace AutoSnake3
 
             void ShortestPathTrace(Cell current, Cell start)
             {
-                for (int i = 0; i < current.StepSourcesIndex; i++)
+                foreach (Cell.Neighbor s in current.StepSources)
                 {
-                    Cell source = current.StepSources[i].Cell;
+                    Cell source = s.Cell;
 
                     if (source.StepIndex == StepIndexCounter)
                     {
