@@ -193,7 +193,7 @@ namespace AutoSnake3
             bool TryBoxCut(Cell head, Cell origin, Direction direction, Cell target, int distance, int tick, int directDistanceToApple)
             {
                 head.SetDistance(origin);
-                int apparentArea = target.SetDistance(head.Previous, false, origin.CycleDistance + distance);
+                int apparentArea = target.SetDistance(Apple, false, origin.CycleDistance + distance);
 
                 LinkedList<Splice> splices = new();
 
@@ -229,7 +229,6 @@ namespace AutoSnake3
                 }
                 while (distance > 0);
 
-                head.SetDistance(Apple);
                 return true;
             }
 
