@@ -70,14 +70,45 @@ namespace AutoSnake3
 
             void CalculatePath()
             {
-                Cell head = Head;
+                int directDistanceToApple = ShortestPathLength(Head, Tick);
 
-                int directDistanceToApple = int.MinValue; // Bogus default value
+                bool moveEnd = true;
 
-                int tick = Tick;
-                int movesSinceLastStep = 0;
+                foreach (Cell.Neighbor source in Apple.StepSources)
+                {
+                    if (source.Direction == Apple.PreviousDirection)
+                    {
+                        moveEnd = false;
+                        break;
+                    }
+                }
 
-                StepIndexCounter++; // Clear Step
+                if (moveEnd)
+                {
+                    Head.SetDistance(null);
+
+                    foreach (Cell.Neighbor source in Apple.StepSources)
+                    {
+                        if (source.Direction != Apple.NextDirection)
+                        {
+                            (bool succeeded, _, _) = TrySplice(source.Cell, ReverseDirection(source.Direction), directDistanceToApple, Tick, Area, 0);
+
+                            if (succeeded)
+                                break;
+                        }
+                    }
+                }
+
+                if (OptimizePath(Head, directDistanceToApple, Tick))
+                    return;
+
+                MoveList.AddLast(Head.NextDirection);
+
+                Cell head = Head.Next;
+
+                int tick = Tick + 1;
+                int movesSinceLastStep = 1;
+                directDistanceToApple--;
 
                 while (head != Apple && head.Next != Apple && head.Next.Next != Apple)
                 {
@@ -134,7 +165,7 @@ namespace AutoSnake3
                                 {
                                     if (test.CycleDistance > current.CycleDistance)
                                     {
-                                        if (TryBoxCut(head, current, neighbor.Direction, test, distance, directDistanceToApple)) // On seperate line for breakpoint
+                                        if (TryBoxCut(head, current, neighbor.Direction, test, distance, callTick, directDistanceToApple)) // On seperate line for breakpoint
                                         {
                                             if (Apple.CycleDistance == directDistanceToApple)
                                                 return true;
@@ -159,7 +190,7 @@ namespace AutoSnake3
                 return Apple.CycleDistance == directDistanceToApple;
             }
 
-            bool TryBoxCut(Cell head, Cell origin, Direction direction, Cell target, int distance, int directDistanceToApple)
+            bool TryBoxCut(Cell head, Cell origin, Direction direction, Cell target, int distance, int tick, int directDistanceToApple)
             {
                 head.SetDistance(origin);
                 int apparentArea = target.SetDistance(head.Previous, false, origin.CycleDistance + distance);
@@ -172,7 +203,7 @@ namespace AutoSnake3
                 {
                     if (origin.NextDirection != direction)
                     {
-                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(origin, direction, directDistanceToApple, apparentArea, target.CycleDistance);
+                        (bool succeeded, Splice main, Splice? secondary) = TrySplice(origin, direction, directDistanceToApple, tick, apparentArea, target.CycleDistance);
 
                         if (succeeded)
                         {
@@ -204,7 +235,7 @@ namespace AutoSnake3
 
             // Connects second.Previous to first.Next, first to second, and splices the two resulting cycles somewhere else
             // If splice fails, returns splice with null origin
-            (bool succeeded, Splice main, Splice? secondary) TrySplice(Cell first, Direction direction, int directDistanceToApple, int apparentArea, int dontSpliceFrom)
+            (bool succeeded, Splice main, Splice? secondary) TrySplice(Cell first, Direction direction, int directDistanceToApple, int tick, int apparentArea, int dontSpliceFrom) // dontSpliceTo is in essence Apple.CycleDistance
             {
                 Cell second = first.Move(direction)!;
                 Cell cycle = second.Previous;
@@ -220,14 +251,16 @@ namespace AutoSnake3
 
                 do
                 {
-                    if (current.CycleDistance < dontSpliceFrom || current.CycleDistance >= Apple.CycleDistance)
+                    if (
+                        (current.CycleDistance < dontSpliceFrom || current.CycleDistance >= Apple.CycleDistance)
+                        && (!current.Occupied(tick + directDistanceToApple)))
                     {
                         foreach (Cell.Neighbor neighbor in current.Neighbors!)
                         {
                             if (!neighbor.Cell.Seperated
                                 && neighbor.Cell.CycleDistance > Apple.CycleDistance
                                 && neighbor.Cell.Previous.DistanceTo(current.Next) == 1
-                                && apparentArea - Length + directDistanceToApple > neighbor.Cell.CycleDistance)
+                                && !neighbor.Cell.Occupied(tick + directDistanceToApple))
                             {
                                 cycle.SetSeperated(false);
 

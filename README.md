@@ -9,8 +9,8 @@ The algorithm runs at the start of the game and every time an apple is eaten, as
 
 ## Performace
 
-| Mean    | Standard Deviation | Minimum | Median  | Maximum |
-| ------- | ------------------ | ------- | ------- | ------- |
-| 47520.4 | 1995.84            | 42127   | 47452.5 | 53686   |
+| Mean     | Standard Deviation | Minimum | Median | Maximum |
+| -------- | ------------------ | ------- | ------ | ------- |
+| 47308.97 | 1919.8             | 41476   | 47254  | 55726   |
 
 Performance characteristics over 1000 simulated 30 x 30 games. All values are moves made by the snake per game.
