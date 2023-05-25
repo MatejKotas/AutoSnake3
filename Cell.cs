@@ -26,12 +26,8 @@ namespace AutoSnake3
             public readonly int X;
             public readonly int Y;
 
-            public Cell? Up { get; internal set; }
-            public Cell? Right { get; internal set; }
-            public Cell? Down { get; internal set; }
-            public Cell? Left { get; internal set; }
-
-            internal Neighbor[]? Neighbors;
+            internal Neighbor[]? Neighbors; // Elements guaranteed to be not null. Length varies.
+            internal Cell[]? Directions; // Elements can be null. Use Direction as index. Length: 4
 
             #region Next
 
@@ -151,16 +147,11 @@ namespace AutoSnake3
 
             public int OccupiedNeighbors()
             {
-                int result = 0;
+                int result = 4;
 
-                if (Up == null || Up.Occupied())
-                    result++;
-                if (Right == null || Right.Occupied())
-                    result++;
-                if (Down == null || Down.Occupied())
-                    result++;
-                if (Left == null || Left.Occupied())
-                    result++;
+                foreach (Neighbor n in Neighbors!)
+                    if (!n.Cell.Occupied())
+                        result--;
 
                 return result;
             }
@@ -182,17 +173,7 @@ namespace AutoSnake3
                 while (cell != this);
             }
 
-            public Cell? Move(Direction direction)
-            {
-                return direction switch
-                {
-                    Direction.Up => Up,
-                    Direction.Right => Right,
-                    Direction.Down => Down,
-                    Direction.Left => Left,
-                    _ => throw new InvalidOperationException()
-                };
-            }
+            public Cell? Move(Direction direction) => Directions![(int)direction];
 
             public int DistanceTo(Cell other) => Abs(X - other.X) + Abs(Y - other.Y);
 

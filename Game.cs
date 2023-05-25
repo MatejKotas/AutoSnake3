@@ -46,52 +46,51 @@ namespace AutoSnake3
                 Matrix = new Cell[SizeX, SizeY];
 
                 for (int x = 0; x < SizeX; x++)
+                    for (int y = 0; y < SizeY; y++)
+                        Matrix[x, y] = new(x, y, this);
+
+                // Set neighbors
+
+                for (int x = 0; x < SizeX; x++)
                 {
                     for (int y = 0; y < SizeY; y++)
                     {
-                        Cell current = new(x, y, this);
+                        List<Cell.Neighbor> neighbors = new();
+                        Cell[] directions = new Cell[4];
 
-                        if (x != 0)
+                        if (y != sizeY - 1)
                         {
-                            current.Left = Matrix[x - 1, y];
-                            current.Left.Right = current;
+                            neighbors.Add(new(Direction.Up, Matrix[x, y + 1]));
+                            directions[(int)Direction.Up] = Matrix[x, y + 1];
+                        }
+
+                        if (x != sizeX - 1)
+                        {
+                            neighbors.Add(new(Direction.Right, Matrix[x + 1, y]));
+                            directions[(int)Direction.Right] = Matrix[x + 1, y];
                         }
 
                         if (y != 0)
                         {
-                            current.Down = Matrix[x, y - 1];
-                            current.Down.Up = current;
+                            neighbors.Add(new(Direction.Down, Matrix[x, y - 1]));
+                            directions[(int)Direction.Down] = Matrix[x, y - 1];
                         }
 
-                        Matrix[x, y] = current;
+                        if (x != 0)
+                        {
+                            neighbors.Add(new(Direction.Left, Matrix[x - 1, y]));
+                            directions[(int)Direction.Left] = Matrix[x - 1, y];
+                        }
+
+                        Matrix[x, y].Neighbors = neighbors.ToArray();
+                        Matrix[x, y].Directions = directions;
                     }
-                }
-
-                // Set neighbors
-
-                foreach (Cell c in Matrix)
-                {
-                    List<Cell.Neighbor> neighbors = new();
-
-                    if (c.Up != null)
-                        neighbors.Add(new(Direction.Up, c.Up));
-
-                    if (c.Right != null)
-                        neighbors.Add(new(Direction.Right, c.Right));
-
-                    if (c.Down != null)
-                        neighbors.Add(new(Direction.Down, c.Down));
-
-                    if (c.Left != null)
-                        neighbors.Add(new(Direction.Left, c.Left));
-
-                    c.Neighbors = neighbors.ToArray();
                 }
 
                 Head = Matrix[SizeX / 2, SizeY / 2];
 
                 Head.SnakeTick = 1;
-                Tail = Head.Up!;
+                Tail = Head.Move(Direction.Up)!;
                 Tail.SnakeTick = 0;
                 Tail.SnakeDirection = Direction.Down;
 
@@ -357,7 +356,7 @@ namespace AutoSnake3
 
         public enum Direction
         {
-            None,
+            None = -1,
             Up,
             Right,
             Down,
