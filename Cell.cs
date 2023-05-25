@@ -33,20 +33,23 @@ namespace AutoSnake3
 
             Direction nextDirection;
 
-            internal Direction NextDirection
+            public Direction NextDirection
             {
                 get => nextDirection;
-                set
+                internal set
                 {
                     nextDirection = value;
+                    Next = Move(value)!;
+
                     Next.PreviousDirection = ReverseDirection(value);
+                    Next.Previous = this;
                 }
             }
 
-            internal Cell Next { get => Move(nextDirection)!; }
+            public Cell Next { get; private set; }
 
-            internal Direction PreviousDirection;
-            internal Cell Previous { get => Move(PreviousDirection)!; }
+            public Direction PreviousDirection { get; private set; }
+            public Cell Previous { get; private set; }
 
             #endregion
 
@@ -203,8 +206,13 @@ namespace AutoSnake3
                 do
                 {
                     Direction temp = cell.PreviousDirection;
+                    Cell temp2 = cell.Previous;
+
                     cell.PreviousDirection = cell.NextDirection;
+                    cell.Previous = cell.Next;
+
                     cell.nextDirection = temp;
+                    cell.Next = temp2;
 
                     cell = cell.Next;
                 }
