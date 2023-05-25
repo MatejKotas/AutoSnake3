@@ -286,7 +286,7 @@ namespace AutoSnake3
 
             internal int StepIndexCounter = 0;
 
-            int ShortestPathLength(Cell start, int tick)
+            internal int ShortestPathLength(Cell start, int tick)
             {
                 LinkedList<Cell> pending = new();
                 pending.AddLast(start);
