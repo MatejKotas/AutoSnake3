@@ -27,7 +27,7 @@ namespace AutoSnake3
             public readonly int Y;
 
             internal Neighbor[]? Neighbors; // Elements guaranteed to be not null. Length varies.
-            internal Neighbor[]? Directions; // Elements can be null. Use Direction as index. Length: 4
+            internal Neighbor[]? Directions { private get; set; } // Elements can be null. Use Direction as index. Length: 4
 
             #region Next
 
@@ -85,7 +85,7 @@ namespace AutoSnake3
             // Sum of Step and distance to apple. Used in Game.ShorestPath
             internal int StepLoss { get; private set; }
 
-            internal Cell[] StepSources = new Cell[4];
+            internal Neighbor[] StepSources = new Neighbor[4]; // All items are elements of Neighbors
             internal int StepSourcesIndex = 0;
 
             #endregion
@@ -173,7 +173,9 @@ namespace AutoSnake3
                 while (cell != this);
             }
 
-            public Cell? Move(Direction direction) => Directions![(int)direction]?.Cell;
+            public Neighbor? NeighborAt(Direction direction) => Directions![(int)direction];
+
+            public Cell? Move(Direction direction) => NeighborAt(direction)?.Cell;
 
             public int DistanceTo(Cell other) => Abs(X - other.X) + Abs(Y - other.Y);
 

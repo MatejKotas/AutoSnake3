@@ -284,12 +284,8 @@ namespace AutoSnake3
                                     neighbor.StepSourcesIndex = 0;
 
                                     foreach (Cell.Neighbor appleN in neighbor.Neighbors!)
-                                    {
-                                        Cell appleNeighbor = appleN.Cell;
-
-                                        if (appleNeighbor.Step == current.Step)
-                                            neighbor.StepSources[neighbor.StepSourcesIndex++] = appleNeighbor;
-                                    }
+                                        if (appleN.Cell.Step == current.Step)
+                                            neighbor.StepSources[neighbor.StepSourcesIndex++] = appleN;
 
                                     ShortestPathTrace(neighbor, start);
 
@@ -299,7 +295,7 @@ namespace AutoSnake3
                                 }
 
                                 neighbor.Step = step;
-                                neighbor.StepSources[0] = current;
+                                neighbor.StepSources[0] = neighbor.NeighborAt(ReverseDirection(n.Direction))!;
                                 neighbor.StepSourcesIndex = 1;
 
                                 // Add to pending at correct position
@@ -322,7 +318,7 @@ namespace AutoSnake3
                                 next:;
                             }
                             else if (neighbor.Step == step)
-                                neighbor.StepSources[neighbor.StepSourcesIndex++] = current;
+                                neighbor.StepSources[neighbor.StepSourcesIndex++] = neighbor.NeighborAt(ReverseDirection(n.Direction))!;
                         }
                     }
                 }
@@ -334,7 +330,7 @@ namespace AutoSnake3
             {
                 for (int i = 0; i < current.StepSourcesIndex; i++)
                 {
-                    Cell source = current.StepSources[i];
+                    Cell source = current.StepSources[i].Cell;
 
                     if (source.StepIndex == StepIndexCounter)
                     {
