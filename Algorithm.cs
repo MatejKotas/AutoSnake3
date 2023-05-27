@@ -86,7 +86,7 @@ namespace AutoSnake3
                 }
 
                 Head.SetDistance(Apple);
-                
+
                 if (moveEnd)
                 {
                     foreach (Cell.Neighbor source in Apple.StepSources)
@@ -126,10 +126,13 @@ namespace AutoSnake3
                     {
                         int updatedDirectDistanceToApple = ShortestPathLength(head, tick);
 
-                        head.SetDistance(Apple);
+                        if (directDistanceToApple != updatedDirectDistanceToApple)
+                        {
+                            head.SetDistance(Apple);
 
-                        if (directDistanceToApple != updatedDirectDistanceToApple && OptimizePath(head, updatedDirectDistanceToApple, tick))
-                            break;
+                            if (OptimizePath(head, updatedDirectDistanceToApple, tick))
+                                break;
+                        }
 
                         movesSinceLastStep = 0;
                         directDistanceToApple = updatedDirectDistanceToApple;
@@ -308,57 +311,68 @@ namespace AutoSnake3
                     {
                         Cell neighbor = n.Cell;
 
-                        if (!neighbor.Occupied(tick + current.Step))
-                        {
-                            int step = current.Step + 1;
+                        int step;
 
+                        if (neighbor.Occupied(tick + current.Step))
+                        {
+                            if (neighbor.FutureSnakeTick != -1)
+                                step = neighbor.FutureSnakeTick - tick + 2;
+                            else
+                                step = neighbor.SnakeTick - tick + 2;
+                        }
+                        else
+                            step = current.Step + 1;
+
+                        if (neighbor.StepIndex != StepIndexCounter || neighbor.Step > step)
+                        {
                             if (neighbor.StepIndex != StepIndexCounter)
-                            {
                                 neighbor.StepIndex = StepIndexCounter;
 
-                                if (neighbor == Apple)
-                                {
-                                    // Make only shortest path(s) have step value
+                            else
+                                pending.Remove(neighbor);
 
-                                    neighbor.StepSources.Clear();
+                            if (neighbor == Apple)
+                            {
+                                // Make only shortest path(s) have step value
 
-                                    foreach (Cell.Neighbor appleN in neighbor.Neighbors)
-                                        if (appleN.Cell.Step == current.Step)
-                                            neighbor.StepSources.Add(appleN);
-
-                                    ShortestPathTrace(neighbor, start);
-
-                                    StepIndexCounter++;
-
-                                    return step;
-                                }
-
-                                neighbor.Step = step;
                                 neighbor.StepSources.Clear();
-                                neighbor.StepSources.Add(neighbor.NeighborAt(ReverseDirection(n.Direction))!);
 
-                                // Add to pending at correct position
+                                foreach (Cell.Neighbor appleN in neighbor.Neighbors)
+                                    if (appleN.Cell.Step == current.Step)
+                                        neighbor.StepSources.Add(appleN);
 
-                                LinkedListNode<Cell>? insertPoint = pending.First;
+                                ShortestPathTrace(neighbor, start);
 
-                                while (insertPoint != null)
+                                StepIndexCounter++;
+
+                                return step;
+                            }
+
+                            neighbor.Step = step;
+                            neighbor.StepSources.Clear();
+                            neighbor.StepSources.Add(neighbor.NeighborAt(ReverseDirection(n.Direction))!);
+
+                            // Add to pending at correct position
+
+                            LinkedListNode<Cell>? insertPoint = pending.First;
+
+                            while (insertPoint != null)
+                            {
+                                if ((insertPoint.Value.StepLoss >= neighbor.StepLoss && insertPoint.Value.Step > neighbor.Step) || insertPoint.Value.StepLoss > neighbor.StepLoss)
                                 {
-                                    if (insertPoint.Value.StepLoss > neighbor.StepLoss)
-                                    {
-                                        pending.AddBefore(insertPoint, neighbor);
-                                        goto next;
-                                    }
-
-                                    insertPoint = insertPoint.Next;
+                                    pending.AddBefore(insertPoint, neighbor);
+                                    goto next;
                                 }
 
-                                pending.AddLast(neighbor);
-
-                                next:;
+                                insertPoint = insertPoint.Next;
                             }
-                            else if (neighbor.Step == step)
-                                neighbor.StepSources.Add(neighbor.NeighborAt(ReverseDirection(n.Direction))!);
+
+                            pending.AddLast(neighbor);
+
+                            next:;
                         }
+                        else if (neighbor.Step == step)
+                            neighbor.StepSources.Add(neighbor.NeighborAt(ReverseDirection(n.Direction))!);
                     }
                 }
 
