@@ -106,9 +106,11 @@
 
 #elif false
 
+            const bool onlyLongPaths = true;
+
             Game? a = null;
 
-            int seed = 13;
+            int seed = 0;
             bool newApple = false;
 
             while (true)
@@ -118,7 +120,7 @@
 
                 Direction lastMove;
 
-                if (a.DirectDistance == a.AlgorithmDistance)
+                if (a.DirectDistance == a.AlgorithmDistance && onlyLongPaths)
                 {
                     do
                     {
