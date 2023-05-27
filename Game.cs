@@ -183,6 +183,8 @@ namespace AutoSnake3
                     CalculatePath();
                     return ((int)elapsed.ElapsedMilliseconds, true);
                 }
+                else if (gameOver)
+                    return (0, true);
 
                 return (0, false);
             }
