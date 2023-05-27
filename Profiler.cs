@@ -32,13 +32,18 @@ namespace AutoSnake3
             readonly int SizeX;
             readonly int SizeY;
 
-            public Profiler(int threads, int sizeX, int sizeY)
+            readonly bool MinimumMode;
+            int MinimumMoves = int.MaxValue;
+            int MinimumSeed;
+
+            public Profiler(int threads, int sizeX, int sizeY, bool minimumMode = false)
             {
                 Threads = threads;
                 SizeX = sizeX;
                 SizeY = sizeY;
 
                 Games = new();
+                MinimumMode = minimumMode;
             }
 
             public delegate void ProfilerCallback();
@@ -63,7 +68,7 @@ namespace AutoSnake3
             {
                 Monitor.Enter(ThreadLock);
 
-                while (NextSeed <= EndSeed)
+                while (NextSeed <= EndSeed && (!MinimumMode || MinimumMoves > SizeX * SizeY - Game.StartingLength))
                 {
                     int seed = NextSeed++;
 
@@ -71,34 +76,56 @@ namespace AutoSnake3
 
                     Game game = new(SizeX, SizeY, true, seed);
 
-                    try
-                    {
-                        while (!game.gameOver)
+                    if (MinimumMode)
+                        while (!game.gameOver && game.Moves + (game.Area - game.Length) < MinimumMoves)
                             game.MakeMove();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
 
-                    if (game.Apple != null)
+                    else
                     {
-                        lock (ThreadLock)
+                        try
                         {
-                            Console.WriteLine($"Seed: { seed }");
-                            game.Print(true, true);
+                            while (!game.gameOver)
+                                game.MakeMove();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
 
-                            throw new Exception("A game has failed. See console.");
+                        if (game.Apple != null)
+                        {
+                            lock (ThreadLock)
+                            {
+                                Console.WriteLine($"Seed: { seed }");
+                                game.Print(true, true);
+
+                                throw new Exception("A game has failed. See console.");
+                            }
                         }
                     }
 
                     Monitor.Enter(ThreadLock);
 
-                    Games.Add(new(seed, game.Moves));
                     GamesComplete++;
 
-                    if (print)
-                        Console.WriteLine($"{ GamesComplete } / { EndSeed - NextSeed + GamesComplete + ThreadsRunning } games complete.");
+                    if (MinimumMode)
+                    {
+                        if (game.gameOver && game.Moves < MinimumMoves)
+                        {
+                            MinimumMoves = game.Moves;
+                            MinimumSeed = seed;
+
+                            Console.WriteLine($"{ GamesComplete } / { EndSeed - NextSeed + GamesComplete + ThreadsRunning } games complete. Minimum moves so far: { MinimumMoves }");
+                        }
+                    }
+
+                    else
+                    {
+                        Games.Add(new(seed, game.Moves));
+
+                        if (print)
+                            Console.WriteLine($"{ GamesComplete } / { EndSeed - NextSeed + GamesComplete + ThreadsRunning } games complete.");
+                    }
                 }
 
                 ThreadsRunning--;
@@ -108,7 +135,11 @@ namespace AutoSnake3
                     if (ThreadsRunning == 0)
                     {
                         Console.WriteLine();
-                        PrintResults();
+
+                        if (MinimumMode)
+                            Console.WriteLine($"Game seed { MinimumSeed } with { MinimumMoves } moves");
+                        else
+                            PrintResults();
                     }
                 }
 
