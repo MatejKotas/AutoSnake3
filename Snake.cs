@@ -15,7 +15,7 @@
 
         static void Main(string[] args)
         {
-#if true
+#if false
 
             GameMode mode = GameMode.Unset;
 
@@ -112,6 +112,7 @@
 
             int seed = 0;
             bool newApple = false;
+            bool skip = false;
 
             while (true)
             {
@@ -120,7 +121,7 @@
 
                 Direction lastMove;
 
-                if (a.DirectDistance == a.AlgorithmDistance && onlyLongPaths)
+                if ((a.DirectDistance == a.AlgorithmDistance && onlyLongPaths) || skip)
                 {
                     do
                     {
@@ -128,13 +129,19 @@
                         (_, newApple) = a.MakeMove();
                     }
                     while (!newApple);
+
+                    skip = false;
                 }
 
                 else
                 {
                     a.Print(true, true);
 
-                    Console.ReadLine();
+                    if (Console.ReadLine() == "c")
+                    {
+                        skip = true;
+                        continue;
+                    }
 
                     do
                     {
@@ -165,7 +172,7 @@
 
 #elif false
 
-            Profiler profiler = new(Environment.ProcessorCount, 30, 30);
+            Profiler profiler = new(Environment.ProcessorCount - 2, 30, 30);
             profiler.RunTests(1, 1000, true, () => Console.Beep(880, 1000));
         }
 #endif
