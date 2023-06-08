@@ -15,7 +15,7 @@
 
         static void Main(string[] args)
         {
-#if false
+#if true
 
             GameMode mode = GameMode.Unset;
 
@@ -42,14 +42,14 @@
             {
                 while (!game.gameOver)
                 {
-                    game.Print(true, true);
+                    game.Print(true, cycle: true);
                     (int elapsed, _) = game.MakeMove();
 
                     if (elapsed < TickDelay)
                         Thread.Sleep(TickDelay - elapsed);
                 }
 
-                game.Print(true, true);
+                game.Print(true, cycle: true);
             }
 
             else
@@ -57,7 +57,7 @@
                 Direction direction = Direction.Down;
 
                 if (mode == GameMode.ManualSingle || mode == GameMode.ManualSingleAssisted)
-                    game.Print(true, false);
+                    game.Print(true);
 
                 while (!game.gameOver)
                 {
@@ -96,7 +96,7 @@
                         }
                     }
 
-                    game.Print(true, false);
+                    game.Print(true);
 
                     if (mode == GameMode.Manual)
                         Thread.Sleep(TickDelay);
@@ -135,7 +135,7 @@
 
                 else
                 {
-                    a.Print(true, true);
+                    a.Print(false, cycle: true);
 
                     if (Console.ReadLine() == "c")
                     {
@@ -160,13 +160,13 @@
             for (int i = 0; i < 0 && !a.gameOver; i++)
                 a.MakeMove();
 
-            a.Print(true, true);
+            a.Print(false, cycle: true);
 
             while (!a.gameOver)
             {
                 a.MakeMove();
 
-                a.DebugPrint(true, true, true);
+                a.DebugPrint(false, cycle: true);
             }
         }
 

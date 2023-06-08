@@ -234,11 +234,14 @@ namespace AutoSnake3
 
             public Direction NextMove { get => MoveList.Count > 0 ? MoveList.First!.Value : Head.NextDirection; }
 
-            public void Print(bool snake = true, bool cycle = false) => DebugPrint(snake: snake, cycle: cycle);
+            public void Print(bool inline, bool snake = true, bool cycle = false) => DebugPrint(inline, snake: snake, cycle: cycle);
 
-            internal void DebugPrint(bool snake = true, bool cycle = false, bool step = false, bool cycleDistance = false, bool seperated = false, int tick = -1)
+            internal void DebugPrint(bool inLine, bool snake = true, bool cycle = false, bool step = false, bool cycleDistance = false, bool seperated = false, int tick = -1)
             {
                 int actualTick = tick == -1 ? Tick : tick;
+
+                if (inLine)
+                    Console.SetCursorPosition(0, 0);
 
                 Console.ForegroundColor = ConsoleColor.Black;
                 Console.BackgroundColor = ConsoleColor.DarkGreen;

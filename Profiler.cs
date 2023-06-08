@@ -97,7 +97,7 @@ namespace AutoSnake3
                             lock (ThreadLock)
                             {
                                 Console.WriteLine($"Seed: { seed }");
-                                game.Print(true, true);
+                                game.Print(true, true, true);
 
                                 throw new Exception("A game has failed. See console.");
                             }
