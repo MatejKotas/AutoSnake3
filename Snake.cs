@@ -2,7 +2,7 @@
 {
     public static partial class Snake
     {
-        const int TickDelay = 400;
+        const int TickDelay = 100;
 
         public enum GameMode
         {
@@ -35,6 +35,8 @@
                     _ => GameMode.Unset
                 };
             }
+
+            Console.Clear();
 
             Game game = new(12, 12, mode == GameMode.Automatic);
 
