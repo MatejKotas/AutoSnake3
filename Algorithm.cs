@@ -164,7 +164,7 @@ namespace AutoSnake3
                     {
                         foreach (Cell.Neighbor neighbor in current.Neighbors)
                         {
-                            if (neighbor.Direction == current.NextDirection || neighbor.Direction == current.PreviousDirection)
+                            if (neighbor.Direction == current.NextDirection || neighbor.Direction == current.PreviousDirection || neighbor.Direction == ReverseDirection(current.NextDirection))
                                 continue;
 
                             int distance = 1;
