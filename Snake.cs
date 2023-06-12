@@ -174,7 +174,7 @@
 
 #elif false
 
-            Profiler profiler = new(Environment.ProcessorCount - 2, 30, 30);
+            Profiler profiler = new(Environment.ProcessorCount, 30, 30);
             profiler.RunTests(1, 1000, true, () => Console.Beep(880, 1000));
         }
 #endif
